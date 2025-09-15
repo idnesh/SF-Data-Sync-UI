@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/common/Button';
+import { Header } from '../components/layout/Header';
 import '../App.css';
 
 // Mock data for demonstration
@@ -20,7 +21,7 @@ const mockJobs = [
     id: '2',
     name: 'Contact Export to Marketing',
     description: 'Export Contact data to marketing system',
-    status: 'Completed',
+    status: 'Inactive',
     lastRun: '2024-01-15 08:00:00',
     nextRun: '2024-01-22 08:00:00',
     recordsProcessed: 3450,
@@ -30,7 +31,7 @@ const mockJobs = [
     id: '3',
     name: 'Opportunity Data Backup',
     description: 'Backup Opportunity records to archive',
-    status: 'Failed',
+    status: 'Draft',
     lastRun: '2024-01-14 23:00:00',
     nextRun: '2024-01-15 23:00:00',
     recordsProcessed: 0,
@@ -39,15 +40,12 @@ const mockJobs = [
 ];
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
     const statusClasses = {
       'Active': 'status-active',
-      'Completed': 'status-completed',
-      'Failed': 'status-failed',
-      'Paused': 'status-paused',
+      'Inactive': 'status-inactive',
       'Draft': 'status-draft'
     };
 
@@ -64,20 +62,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      <header className="dashboard-header">
-        <div className="header-left">
-          <h1>Salesforce Data Synchronization Platform</h1>
-          <p>Welcome back, {user?.fullName}</p>
-        </div>
-        <div className="header-buttons">
-          <Button variant="outline" onClick={() => console.log('Settings clicked')}>
-            Settings
-          </Button>
-          <Button variant="secondary" onClick={logout}>
-            Logout
-          </Button>
-        </div>
-      </header>
+      <Header />
 
       <main className="dashboard-main">
         <div className="dashboard-container">
@@ -105,14 +90,6 @@ const Dashboard: React.FC = () => {
                 <h3>Failed Jobs</h3>
                 <p className="stat-number">1</p>
                 <span className="stat-change">Needs attention</span>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">📈</div>
-              <div className="stat-content">
-                <h3>Records Synced</h3>
-                <p className="stat-number">45.2K</p>
-                <span className="stat-change">Last 30 days</span>
               </div>
             </div>
           </div>
@@ -163,7 +140,6 @@ const Dashboard: React.FC = () => {
                     <th>Job Name</th>
                     <th>Status</th>
                     <th>Schedule</th>
-                    <th>Last Run</th>
                     <th>Records</th>
                     <th>Actions</th>
                   </tr>
@@ -179,7 +155,6 @@ const Dashboard: React.FC = () => {
                       </td>
                       <td>{getStatusBadge(job.status)}</td>
                       <td>{job.schedule}</td>
-                      <td>{formatDate(job.lastRun)}</td>
                       <td>{job.recordsProcessed.toLocaleString()}</td>
                       <td>
                         <div className="job-actions">

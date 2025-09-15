@@ -54,7 +54,7 @@ export interface JobSchedule {
   nextRun?: string;
 }
 
-export type JobStatus = 'Draft' | 'Active' | 'Paused' | 'Failed' | 'Completed';
+export type JobStatus = 'Draft' | 'Active' | 'Inactive';
 
 export interface JobExecution {
   id: string;

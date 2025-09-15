@@ -110,9 +110,9 @@ export const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
       >
         <div className="modal-header">
-          <h2 id="modal-title" className="modal-title">
+          <h4 id="modal-title" className="modal-title">
             {title}
-          </h2>
+          </h4>
           {showCloseButton && (
             <button
               className="modal-close-button"

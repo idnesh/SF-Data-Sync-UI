@@ -103,7 +103,7 @@ export const Step1Details: React.FC<Step1DetailsProps> = ({
   return (
     <div className="step-container" role="main" aria-labelledby="step1-heading">
       <div className="step-header">
-        <h2 id="step1-heading" className="step-title">Job Details</h2>
+        <h4 id="step1-heading" className="step-title">Job Details</h4>
         <p className="step-description">
           Provide basic information about your sync job. This will help you identify and manage the job later.
         </p>

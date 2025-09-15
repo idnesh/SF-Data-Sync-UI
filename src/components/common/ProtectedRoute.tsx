@@ -47,7 +47,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return (
       <div className="access-denied">
         <div className="access-denied-content">
-          <h2>Access Denied</h2>
+          <h4>Access Denied</h4>
           <p>You don't have permission to access this page.</p>
           <p>Required role: {requiredRole}</p>
           <p>Your role: {user?.role}</p>

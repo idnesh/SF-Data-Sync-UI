@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
+import { Header } from '../../components/layout/Header';
 import { useJobWizard } from './hooks/useJobWizard';
 import { Step1Details } from './steps/Step1Details';
 import { Step2Connections } from './steps/Step2Connections';
@@ -101,7 +102,7 @@ export const JobWizard: React.FC = () => {
         return (
           <div className="step-container">
             <div className="step-header">
-              <h2 className="step-title">Field Mapping</h2>
+              <h4 className="step-title">Field Mapping</h4>
               <p className="step-description">Configure field mappings and transformations</p>
             </div>
             <div className="coming-soon-content">
@@ -126,7 +127,7 @@ export const JobWizard: React.FC = () => {
         return (
           <div className="step-container">
             <div className="step-header">
-              <h2 className="step-title">Field Validation</h2>
+              <h4 className="step-title">Field Validation</h4>
               <p className="step-description">Validate field compatibility and mappings</p>
             </div>
             <div className="coming-soon-content">
@@ -151,7 +152,7 @@ export const JobWizard: React.FC = () => {
         return (
           <div className="step-container">
             <div className="step-header">
-              <h2 className="step-title">Test & Schedule</h2>
+              <h4 className="step-title">Test & Schedule</h4>
               <p className="step-description">Test your job and configure scheduling</p>
             </div>
             <div className="coming-soon-content">
@@ -184,9 +185,14 @@ export const JobWizard: React.FC = () => {
 
   return (
     <div className="job-wizard" role="main" aria-labelledby="wizard-heading">
-      {/* Header */}
+      <Header
+        title="Salesforce Data Synchronization Platform"
+        subtitle="Create a new data synchronization job"
+      />
+
+      {/* Wizard Header */}
       <header className="wizard-header">
-        <h1 id="wizard-heading">Create Sync Job</h1>
+        <h3 id="wizard-heading">Create Sync Job</h3>
         <div className="header-actions">
           <Button
             variant="outline"

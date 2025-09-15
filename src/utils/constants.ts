@@ -16,9 +16,7 @@ export const USER_ROLES = {
 export const JOB_STATUSES = {
   DRAFT: 'Draft',
   ACTIVE: 'Active',
-  PAUSED: 'Paused',
-  FAILED: 'Failed',
-  COMPLETED: 'Completed'
+  INACTIVE: 'Inactive'
 } as const;
 
 // Job execution statuses

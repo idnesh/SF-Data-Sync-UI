@@ -83,7 +83,7 @@ function Signup() {
       </header>
       <main className="App-main">
         <div className="login-container">
-          <h2>Get Started</h2>
+          <h4>Get Started</h4>
           {error && (
             <div className="error-banner">
               {error}

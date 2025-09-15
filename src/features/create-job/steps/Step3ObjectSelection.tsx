@@ -120,7 +120,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
   return (
     <div className="step-container" role="main" aria-labelledby="step3-heading">
       <div className="step-header">
-        <h2 id="step3-heading" className="step-title">Object Selection</h2>
+        <h4 id="step3-heading" className="step-title">Object Selection</h4>
         <p className="step-description">
           Choose the Salesforce object you want to synchronize. You can search by object name or label.
         </p>

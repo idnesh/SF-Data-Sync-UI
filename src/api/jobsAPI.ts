@@ -40,7 +40,7 @@ const mockDelay = (ms: number = 800) => new Promise(resolve => setTimeout(resolv
 
 // Mock job data generator
 const generateMockJobs = (count: number): JobListItem[] => {
-  const statuses: JobStatus[] = ['Active', 'Completed', 'Failed', 'Paused', 'Draft'];
+  const statuses: JobStatus[] = ['Active', 'Inactive', 'Draft'];
   const objects = ['Account', 'Contact', 'Lead', 'Opportunity', 'Case', 'Product2', 'User', 'Campaign'];
   const schedules = ['Manual', '30min', '1hour', '2hours', '6hours', '12hours', 'Daily'];
   const orgs = [
@@ -66,7 +66,7 @@ const generateMockJobs = (count: number): JobListItem[] => {
       tested: Math.random() > 0.3, // 70% chance of being tested
       created: createdDate.toISOString(),
       lastRun: status !== 'Draft' ? new Date(createdDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : undefined,
-      recordsProcessed: status === 'Completed' ? Math.floor(Math.random() * 10000) + 100 : undefined,
+      recordsProcessed: status === 'Active' ? Math.floor(Math.random() * 10000) + 100 : undefined,
       nextRun: status === 'Active' ? new Date(Date.now() + Math.random() * 24 * 60 * 60 * 1000).toISOString() : undefined
     };
   });
@@ -167,7 +167,7 @@ export const jobsAPI = {
         return { success: false, error: 'Job not found' };
       }
 
-      job.status = 'Paused';
+      job.status = 'Inactive';
       return { success: true };
     } catch (error) {
       return { success: false, error: 'Failed to pause job' };
@@ -202,10 +202,8 @@ export const jobsAPI = {
       }
 
       job.lastRun = new Date().toISOString();
-      job.status = Math.random() > 0.8 ? 'Failed' : 'Completed'; // 20% failure rate
-      if (job.status === 'Completed') {
-        job.recordsProcessed = Math.floor(Math.random() * 5000) + 100;
-      }
+      job.status = 'Active'; // Job successfully ran
+      job.recordsProcessed = Math.floor(Math.random() * 5000) + 100;
 
       return { success: true };
     } catch (error) {

@@ -4,6 +4,7 @@ import { jobsAPI, JobListItem } from '../../api/jobsAPI';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Modal } from '../../components/common/Modal';
+import { Header } from '../../components/layout/Header';
 
 interface ViewJobsPageProps {}
 
@@ -128,12 +129,8 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
     switch (status) {
       case 'Active':
         return <span className="status-icon active">▶️</span>;
-      case 'Completed':
-        return <span className="status-icon completed">✅</span>;
-      case 'Failed':
-        return <span className="status-icon failed">❌</span>;
-      case 'Paused':
-        return <span className="status-icon paused">⏸️</span>;
+      case 'Inactive':
+        return <span className="status-icon inactive">⏸️</span>;
       case 'Draft':
         return <span className="status-icon draft">📝</span>;
       default:
@@ -225,12 +222,13 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
 
   return (
     <div className="jobs-page">
+      <Header
+        title="Salesforce Data Synchronization Platform"
+        subtitle="Manage and monitor your data synchronization jobs"
+      />
       <div className="jobs-header">
         <div className="header-content">
-          <h1 className="page-title">All Jobs</h1>
-          <p className="page-description">
-            Manage and monitor your data synchronization jobs
-          </p>
+          <h3 className="page-title">All Jobs</h3>
         </div>
         <div className="header-actions">
           <Button
@@ -323,7 +321,6 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
                   <th scope="col">Source → Target</th>
                   <th scope="col">Schedule</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Last Run</th>
                   <th scope="col">Actions</th>
                 </tr>
               </thead>
@@ -374,21 +371,6 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
                       </div>
                     </td>
 
-                    <td className="last-run-cell">
-                      {job.lastRun ? (
-                        <div className="last-run-info">
-                          <div className="run-date">{formatDate(job.lastRun)}</div>
-                          {job.recordsProcessed && (
-                            <div className="records-count">
-                              {job.recordsProcessed.toLocaleString()} records
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="no-runs">Never run</span>
-                      )}
-                    </td>
-
                     <td className="actions-cell">
                       <div className="job-actions">
                         {job.status === 'Active' && (
@@ -398,26 +380,26 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
                             onClick={() => handleJobAction(job.id, 'pause')}
                             disabled={!!actionLoading[job.id]}
                             loading={actionLoading[job.id] === 'pause'}
-                            title="Pause job"
+                            title="Deactivate job"
                           >
                             ⏸️
                           </Button>
                         )}
 
-                        {job.status === 'Paused' && (
+                        {job.status === 'Inactive' && (
                           <Button
                             variant="outline"
                             size="small"
                             onClick={() => handleJobAction(job.id, 'resume')}
                             disabled={!!actionLoading[job.id]}
                             loading={actionLoading[job.id] === 'resume'}
-                            title="Resume job"
+                            title="Activate job"
                           >
                             ▶️
                           </Button>
                         )}
 
-                        {(job.status === 'Active' || job.status === 'Paused') && (
+                        {(job.status === 'Active' || job.status === 'Inactive') && (
                           <Button
                             variant="outline"
                             size="small"

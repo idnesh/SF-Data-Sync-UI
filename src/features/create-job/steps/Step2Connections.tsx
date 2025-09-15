@@ -253,7 +253,7 @@ export const Step2Connections: React.FC<Step2ConnectionsProps> = ({
   return (
     <div className="step-container" role="main" aria-labelledby="step2-heading">
       <div className="step-header">
-        <h2 id="step2-heading" className="step-title">Salesforce Connections</h2>
+        <h4 id="step2-heading" className="step-title">Salesforce Connections</h4>
         <p className="step-description">
           Connect to your source and target Salesforce organizations. Both connections must be successful to proceed.
         </p>
