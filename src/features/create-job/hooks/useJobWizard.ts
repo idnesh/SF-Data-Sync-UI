@@ -376,6 +376,17 @@ export const useJobWizard = () => {
     }
   }, [state.jobData, updateJobData, markStepCompleted, setLoading, setError]);
 
+  // Step 6: Update Schedule
+  const updateSchedule = useCallback((schedule: ScheduleOption, startDate?: string, startTime?: string, customCron?: string) => {
+    updateJobData({
+      schedule,
+      startDate,
+      startTime,
+      customCron
+    });
+    markStepCompleted(6, false);
+  }, [updateJobData, markStepCompleted]);
+
   // Final: Create Job
   const createJob = useCallback(async () => {
     setLoading(true);
@@ -464,6 +475,7 @@ export const useJobWizard = () => {
     updateFieldMappings,
     validateFields,
     testJob,
+    updateSchedule,
     createJob,
     saveAsDraft,
     clearDraft,

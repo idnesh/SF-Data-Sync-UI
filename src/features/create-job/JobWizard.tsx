@@ -7,10 +7,10 @@ import { useJobWizard } from './hooks/useJobWizard';
 import { Step1Details } from './steps/Step1Details';
 import { Step2Connections } from './steps/Step2Connections';
 import { Step3ObjectSelection } from './steps/Step3ObjectSelection';
+import { Step6TestSchedule } from './steps/Step6TestSchedule';
 // TODO: Import remaining steps when created
 // import { Step4FieldMapping } from './steps/Step4FieldMapping';
 // import { Step5Validation } from './steps/Step5Validation';
-// import { Step6TestSchedule } from './steps/Step6TestSchedule';
 import '../../App.css';
 
 export const JobWizard: React.FC = () => {
@@ -31,6 +31,7 @@ export const JobWizard: React.FC = () => {
     updateFieldMappings,
     validateFields,
     testJob,
+    updateSchedule,
     createJob,
     saveAsDraft,
     clearDraft,
@@ -148,30 +149,21 @@ export const JobWizard: React.FC = () => {
         );
 
       case 6:
-        // TODO: Implement Step6TestSchedule
         return (
-          <div className="step-container">
-            <div className="step-header">
-              <h4 className="step-title">Test & Schedule</h4>
-              <p className="step-description">Test your job and configure scheduling</p>
-            </div>
-            <div className="coming-soon-content">
-              <p>🚧 Step 6: Job Testing & Scheduling</p>
-              <p>This step will include:</p>
-              <ul>
-                <li>Dry-run job testing</li>
-                <li>Test results and error reporting</li>
-                <li>Schedule configuration</li>
-                <li>Final job creation</li>
-              </ul>
-            </div>
-            <div className="step-actions">
-              <Button variant="outline" onClick={previousStep}>Previous</Button>
-              <Button variant="success" onClick={() => alert('Job creation will be implemented!')}>
-                Create Job
-              </Button>
-            </div>
-          </div>
+          <Step6TestSchedule
+            jobData={jobData}
+            onTest={testJob}
+            onUpdateSchedule={updateSchedule}
+            onNext={async () => {
+              const result = await createJob();
+              if (result.success) {
+                navigate('/jobs');
+              }
+            }}
+            onPrevious={previousStep}
+            isLoading={isLoading}
+            error={error}
+          />
         );
 
       default:

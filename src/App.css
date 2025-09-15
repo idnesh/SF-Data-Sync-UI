@@ -2107,6 +2107,273 @@
   justify-content: center;
 }
 
+/* Step 6: Test & Schedule Styles */
+.test-schedule-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.section-header-inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.section-icon {
+  font-size: 2rem;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.section-info {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.3px;
+}
+
+.section-subtitle {
+  color: #a0a0a0;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Test Section */
+.test-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sample-size-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 200px;
+}
+
+.test-button {
+  align-self: flex-start;
+}
+
+.test-results {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.result-icon {
+  font-size: 1.2rem;
+}
+
+.result-status {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.stat-value.success {
+  color: #28a745;
+}
+
+.stat-value.error {
+  color: #dc3545;
+}
+
+/* Schedule Section */
+.schedule-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.schedule-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #0a0a0a;
+  border: 2px solid #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.schedule-option:hover {
+  border-color: #555;
+  background: #1a1a1a;
+}
+
+.schedule-option.selected {
+  border-color: #0071e3;
+  background: rgba(0, 113, 227, 0.1);
+}
+
+.option-icon {
+  font-size: 1.5rem;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-label {
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.option-description {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.option-radio {
+  min-width: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.radio-dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #555;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.radio-dot.selected {
+  border-color: #0071e3;
+}
+
+.radio-dot.selected::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #0071e3;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Start Time Section */
+.datetime-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.datetime-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.date-input,
+.time-input {
+  padding: 0.75rem;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.date-input:focus,
+.time-input:focus {
+  outline: none;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.1);
+}
+
+.datetime-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 113, 227, 0.1);
+  border: 1px solid rgba(0, 113, 227, 0.3);
+  border-radius: 6px;
+}
+
+.preview-label {
+  color: #a0a0a0;
+  font-weight: 500;
+}
+
+.preview-value {
+  color: #0071e3;
+  font-weight: 600;
+}
+
+.datetime-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 6px;
+}
+
+.error-icon {
+  font-size: 1.1rem;
+}
+
+.error-text {
+  color: #dc3545;
+  font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
 
@@ -2159,5 +2426,41 @@
   .jobs-table th:nth-child(6),
   .jobs-table td:nth-child(6) {
     display: none;
+  }
+
+  /* Step 6 Mobile Responsive */
+  .schedule-options {
+    grid-template-columns: 1fr;
+  }
+
+  .datetime-group {
+    grid-template-columns: 1fr;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+  }
+
+  .section-header-inline {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .test-controls {
+    align-items: stretch;
+  }
+
+  .sample-size-control {
+    max-width: 100%;
+  }
+
+  .test-button {
+    align-self: stretch;
+  }
+
+  .result-stats {
+    grid-template-columns: 1fr;
   }
 }

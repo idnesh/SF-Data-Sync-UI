@@ -2,7 +2,7 @@
 
 export type Environment = 'production' | 'sandbox' | 'developer';
 
-export type ScheduleOption = 'manual' | '30min' | '1hour' | '2hours' | '6hours' | '12hours' | 'daily' | 'custom';
+export type ScheduleOption = 'manual' | '30min' | '1hour' | '2hours' | '6hours' | '12hours' | 'daily' | 'weekly' | '2weeks' | 'monthly' | 'custom';
 
 export type ValidationStatus = 'valid' | 'warning' | 'incompatible';
 
@@ -87,6 +87,8 @@ export interface JobData {
   transformations: Record<string, Transformation>;
   schedule: ScheduleOption;
   customCron?: string;
+  startDate?: string;
+  startTime?: string;
   tested: boolean;
   testResult?: TestResult;
   validationResults?: FieldValidationResult[];
