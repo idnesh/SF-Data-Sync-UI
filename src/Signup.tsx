@@ -1,22 +1,69 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
+import { Input } from './components/common/Input'
+import { Button } from './components/common/Button'
+import { validateFieldRealTime } from './utils/validation'
 import './App.css'
 
 function Signup() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const { signup, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Clear error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => ({ ...prev, [field]: '' }));
+    }
+
+    // Clear global error
+    if (error) {
+      clearError();
+    }
+  };
+
+  const handleFieldBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+
+    // Validate field on blur
+    const errorMessage = validateFieldRealTime(field, formData[field as keyof typeof formData], formData);
+    if (errorMessage) {
+      setFieldErrors(prev => ({ ...prev, [field]: errorMessage }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
+
+    // Validate all fields
+    const errors: Record<string, string> = {};
+    Object.keys(formData).forEach(field => {
+      const errorMessage = validateFieldRealTime(field, formData[field as keyof typeof formData], formData);
+      if (errorMessage) {
+        errors[field] = errorMessage;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setTouched({ fullName: true, email: true, password: true, confirmPassword: true });
       return;
     }
-    // Handle signup logic here
-    console.log('Signup attempt:', { email, password, fullName });
+
+    const success = await signup(formData);
+    if (success) {
+      navigate('/dashboard');
+    }
   };
 
   const goBack = () => {
@@ -37,51 +84,89 @@ function Signup() {
       <main className="App-main">
         <div className="login-container">
           <h2>Get Started</h2>
+          {error && (
+            <div className="error-banner">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="login-form">
-            <div className="form-group">
-              <label htmlFor="fullName">Full Name</label>
-              <input
-                type="text"
-                id="fullName"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button type="submit" className="btn login-btn">Sign Up</button>
+            <Input
+              type="text"
+              id="fullName"
+              name="fullName"
+              label="Full Name"
+              value={formData.fullName}
+              onChange={(value) => handleFieldChange('fullName', value)}
+              onBlur={() => handleFieldBlur('fullName')}
+              error={touched.fullName ? fieldErrors.fullName : undefined}
+              required
+              autoComplete="name"
+              placeholder="Enter your full name"
+            />
+
+            <Input
+              type="email"
+              id="email"
+              name="email"
+              label="Email"
+              value={formData.email}
+              onChange={(value) => handleFieldChange('email', value)}
+              onBlur={() => handleFieldBlur('email')}
+              error={touched.email ? fieldErrors.email : undefined}
+              required
+              autoComplete="email"
+              placeholder="Enter your email address"
+            />
+
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              label="Password"
+              value={formData.password}
+              onChange={(value) => handleFieldChange('password', value)}
+              onBlur={() => handleFieldBlur('password')}
+              error={touched.password ? fieldErrors.password : undefined}
+              required
+              autoComplete="new-password"
+              placeholder="Create a strong password"
+              showPasswordStrength
+            />
+
+            <Input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              label="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={(value) => handleFieldChange('confirmPassword', value)}
+              onBlur={() => handleFieldBlur('confirmPassword')}
+              error={touched.confirmPassword ? fieldErrors.confirmPassword : undefined}
+              required
+              autoComplete="new-password"
+              placeholder="Confirm your password"
+            />
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="medium"
+              fullWidth
+              loading={isLoading}
+              disabled={isLoading || Object.keys(fieldErrors).some(key => fieldErrors[key])}
+            >
+              {isLoading ? 'Creating Account...' : 'Sign Up'}
+            </Button>
           </form>
           <p className="auth-link">
-            Already have an account? <a href="/login">Login</a>
+            Already have an account? <button
+              type="button"
+              className="link-button"
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </button>
           </p>
         </div>
       </main>

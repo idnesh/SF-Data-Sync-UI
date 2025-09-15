@@ -1,9 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
 import './App.css'
 
 function App() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = () => {
     navigate('/login');
