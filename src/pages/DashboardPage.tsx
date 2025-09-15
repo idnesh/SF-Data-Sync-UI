@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/common/Button';
 import '../App.css';
@@ -39,6 +40,7 @@ const mockJobs = [
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const getStatusBadge = (status: string) => {
     const statusClasses = {
@@ -124,7 +126,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="primary"
                 size="large"
-                onClick={() => console.log('Create new job')}
+                onClick={() => navigate('/jobs/create')}
               >
                 + Create New Job
               </Button>
