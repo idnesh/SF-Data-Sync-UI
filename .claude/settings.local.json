@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm install)",
       "Bash(npm install:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

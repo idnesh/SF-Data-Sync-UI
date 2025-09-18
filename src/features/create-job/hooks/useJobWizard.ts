@@ -44,7 +44,9 @@ const INITIAL_JOB_DATA: JobData = {
     environment: 'sandbox' as Environment,
     isConnected: false
   },
-  selectedObject: '',
+  selectedObject: '', // Keep for backward compatibility
+  sourceObject: '',
+  targetObject: '',
   syncAllFields: true,
   selectedFields: [],
   fieldMappings: {},
@@ -243,27 +245,38 @@ export const useJobWizard = () => {
     }
   }, [state.jobData, updateJobData, markStepCompleted, setLoading, setError]);
 
-  // Step 3: Select Salesforce Object
-  const selectObject = useCallback(async (objectName: string) => {
-    updateJobData({ selectedObject: objectName });
-    markStepCompleted(3, false);
+  // Step 3: Select Salesforce Objects
+  const selectObject = useCallback(async (objectName: string, type: 'source' | 'target') => {
+    const updates = type === 'source'
+      ? { sourceObject: objectName, selectedObject: objectName } // Keep selectedObject in sync for backward compatibility
+      : { targetObject: objectName };
+
+    updateJobData(updates);
+
+    // Check if both objects are selected to mark step as completed
+    const currentData = state.jobData;
+    const sourceSelected = type === 'source' ? objectName : currentData.sourceObject;
+    const targetSelected = type === 'target' ? objectName : currentData.targetObject;
+    const bothSelected = sourceSelected && targetSelected;
+
+    markStepCompleted(3, !bothSelected);
 
     // Pre-fetch fields for the selected object
     try {
       const fieldsResponse = await mockSalesforceAPI.getFields({
-        connectionId: 'source', // In real implementation, use actual connection ID
+        connectionId: type, // In real implementation, use actual connection ID
         objectName
       });
 
       if (fieldsResponse.success) {
         // Cache fields for later use
         // In a real implementation, you might want to store this in a separate state or context
-        trackEvent('wizard.object_selected', { objectName, fieldCount: fieldsResponse.fields.length });
+        trackEvent('wizard.object_selected', { objectName, type, fieldCount: fieldsResponse.fields.length });
       }
     } catch (error) {
       console.warn('Failed to pre-fetch fields:', error);
     }
-  }, [updateJobData, markStepCompleted]);
+  }, [updateJobData, markStepCompleted, state.jobData]);
 
   // Step 4: Configure Field Mappings
   const updateFieldMappings = useCallback((mappings: FieldMapping, transformations: Record<string, Transformation>, selectedFields: string[], syncAllFields: boolean) => {

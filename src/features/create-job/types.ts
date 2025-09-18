@@ -91,7 +91,9 @@ export interface JobData {
   description?: string;
   sourceConnection: ConnectionData;
   targetConnection: ConnectionData;
-  selectedObject: string;
+  selectedObject: string; // Keep for backward compatibility
+  sourceObject: string;
+  targetObject: string;
   syncAllFields: boolean;
   selectedFields: string[];
   fieldMappings: FieldMapping;

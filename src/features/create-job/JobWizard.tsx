@@ -90,6 +90,8 @@ export const JobWizard: React.FC = () => {
         return (
           <Step3ObjectSelection
             selectedObject={jobData.selectedObject}
+            sourceObject={jobData.sourceObject}
+            targetObject={jobData.targetObject}
             onSelectObject={selectObject}
             onNext={nextStep}
             onPrevious={previousStep}

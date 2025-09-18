@@ -6,15 +6,19 @@ import { SalesforceObject } from '../types';
 import { MOCK_SFDC_OBJECTS_RESPONSE } from '../api/mockSfdcObjects';
 
 interface Step3ObjectSelectionProps {
-  selectedObject: string;
-  onSelectObject: (objectName: string) => void;
+  selectedObject: string; // Keep for backward compatibility
+  sourceObject: string;
+  targetObject: string;
+  onSelectObject: (objectName: string, type: 'source' | 'target') => void;
   onNext: () => void;
   onPrevious: () => void;
   isLoading: boolean;
 }
 
 export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
-  selectedObject,
+  selectedObject, // Keep for backward compatibility
+  sourceObject,
+  targetObject,
   onSelectObject,
   onNext,
   onPrevious,
@@ -130,18 +134,18 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
     });
   }, []);
 
-  const handleObjectSelect = useCallback((objectName: string) => {
-    onSelectObject(objectName);
+  const handleObjectSelect = useCallback((objectName: string, type: 'source' | 'target') => {
+    onSelectObject(objectName, type);
   }, [onSelectObject]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent, objectName: string) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent, objectName: string, type: 'source' | 'target') => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      handleObjectSelect(objectName);
+      handleObjectSelect(objectName, type);
     }
   }, [handleObjectSelect]);
 
-  const canProceed = Boolean(selectedObject);
+  const canProceed = Boolean(sourceObject && targetObject);
 
   if (loadingObjects) {
     return (
@@ -227,11 +231,11 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
                   <ExpandableObjectCard
                     key={`source-${object.name}`}
                     object={object}
-                    isSelected={selectedObject === object.name}
+                    isSelected={sourceObject === object.name}
                     isExpanded={expandedObjects.has(object.name)}
-                    onSelect={handleObjectSelect}
+                    onSelect={(objectName) => handleObjectSelect(objectName, 'source')}
                     onToggleExpand={toggleObjectExpansion}
-                    onKeyDown={handleKeyDown}
+                    onKeyDown={(event, objectName) => handleKeyDown(event, objectName, 'source')}
                     isTarget={false}
                   />
                 ))
@@ -275,11 +279,11 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
                   <ExpandableObjectCard
                     key={`target-${object.name}`}
                     object={object}
-                    isSelected={selectedObject === object.name}
+                    isSelected={targetObject === object.name}
                     isExpanded={expandedObjects.has(object.name)}
-                    onSelect={handleObjectSelect}
+                    onSelect={(objectName) => handleObjectSelect(objectName, 'target')}
                     onToggleExpand={toggleObjectExpansion}
-                    onKeyDown={handleKeyDown}
+                    onKeyDown={(event, objectName) => handleKeyDown(event, objectName, 'target')}
                     isTarget={true}
                   />
                 ))
@@ -310,7 +314,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
         </Button>
 
         <div id="next-help" className="button-help">
-          {!canProceed && 'Please select a Salesforce object to continue'}
+          {!canProceed && 'Please select both source and target objects to continue'}
         </div>
       </div>
 
