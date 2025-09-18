@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="dashboard-header">
+    <header className="dashboard-header fixed-header">
       <div className="header-left">
         <h1
           className="header-title clickable"

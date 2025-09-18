@@ -61,10 +61,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="dashboard">
+    <div className="dashboard-layout">
       <Header />
 
-      <main className="dashboard-main">
+      <main className="scrollable-content">
         <div className="dashboard-container">
           {/* Stats Cards */}
           <div className="stats-grid">

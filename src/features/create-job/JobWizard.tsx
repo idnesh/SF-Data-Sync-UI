@@ -140,35 +140,36 @@ export const JobWizard: React.FC = () => {
   };
 
   return (
-    <div className="job-wizard" role="main" aria-labelledby="wizard-heading">
+    <div className="wizard-layout" role="main" aria-labelledby="wizard-heading">
       <Header
         title="Salesforce Data Synchronization Platform"
         subtitle="Create a new data synchronization job"
       />
 
-      {/* Wizard Header */}
-      <header className="wizard-header">
-        <h3 id="wizard-heading">Create Sync Job</h3>
-        <div className="header-actions">
-          <Button
-            variant="outline"
-            onClick={saveAsDraft}
-            disabled={!isDirty}
-            aria-label="Save current progress as draft"
-          >
-            Save Draft
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleExit}
-            aria-label="Exit wizard and return to dashboard"
-          >
-            Exit
-          </Button>
-        </div>
-      </header>
+      <div className="scrollable-content">
+        {/* Wizard Header */}
+        <header className="wizard-header">
+          <h3 id="wizard-heading">Create Sync Job</h3>
+          <div className="header-actions">
+            <Button
+              variant="outline"
+              onClick={saveAsDraft}
+              disabled={!isDirty}
+              aria-label="Save current progress as draft"
+            >
+              Save Draft
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExit}
+              aria-label="Exit wizard and return to dashboard"
+            >
+              Exit
+            </Button>
+          </div>
+        </header>
 
-      <div className="wizard-main">
+        <div className="wizard-main">
         {/* Sidebar with Progress Stepper */}
         <aside className="wizard-sidebar" aria-label="Job creation progress">
           <nav className="progress-stepper" role="navigation" aria-label="Wizard steps">
@@ -245,6 +246,7 @@ export const JobWizard: React.FC = () => {
 
           {renderCurrentStep()}
         </main>
+        </div>
       </div>
     </div>
   );

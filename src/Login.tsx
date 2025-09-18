@@ -69,8 +69,8 @@ function Login() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="auth-page-layout">
+      <header className="App-header fixed-header">
         <div className="header-left">
           <h1>Salesforce Data Synchronization Platform</h1>
           <p>Login to your account</p>
@@ -79,7 +79,7 @@ function Login() {
           <button className="btn btn-secondary" onClick={goBack}>Back</button>
         </div>
       </header>
-      <main className="App-main">
+      <main className="scrollable-content">
         <div className="login-container">
           <h2>Welcome Back</h2>
           {error && (

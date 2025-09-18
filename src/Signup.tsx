@@ -71,8 +71,8 @@ function Signup() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div className="auth-page-layout">
+      <header className="App-header fixed-header">
         <div className="header-left">
           <h1>Salesforce Data Synchronization Platform</h1>
           <p>Create your account</p>
@@ -81,7 +81,7 @@ function Signup() {
           <button className="btn btn-secondary" onClick={goBack}>Back</button>
         </div>
       </header>
-      <main className="App-main">
+      <main className="scrollable-content">
         <div className="login-container">
           <h4>Get Started</h4>
           {error && (

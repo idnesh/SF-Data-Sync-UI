@@ -221,12 +221,13 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
   };
 
   return (
-    <div className="jobs-page">
+    <div className="jobs-page-layout">
       <Header
         title="Salesforce Data Synchronization Platform"
         subtitle="Manage and monitor your data synchronization jobs"
       />
-      <div className="jobs-header">
+      <div className="scrollable-content">
+        <div className="jobs-header">
         <div className="header-content">
           <h3 className="page-title">All Jobs</h3>
         </div>
@@ -468,6 +469,7 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = () => {
           </div>
         </div>
       </Modal>
+      </div>
     </div>
   );
 };

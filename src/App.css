@@ -2963,3 +2963,78 @@
         padding: 10px 12px;
     }
 }
+
+/* Fixed Header Layout */
+.fixed-header-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.fixed-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+}
+
+/* Custom scrollbar for webkit browsers */
+.scrollable-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* Specific layout classes for different page types */
+.auth-page-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.auth-page-layout .scrollable-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 2rem 1rem;
+}
+
+.dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.wizard-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.jobs-page-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
