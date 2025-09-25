@@ -36,22 +36,58 @@ function App() {
         </div>
       </header>
       <main className="App-main">
-        <div className="feature-grid">
-          <div className="feature-card">
-            <h3>Data Import</h3>
-            <p>Import data from various sources into Salesforce</p>
+        <div className="landing-container">
+          <div className="hero-section">
+            <div className="app-description">
+              <h2 className="main-title">Transform Your Data Management</h2>
+              <p className="description-text">
+                R-Data-X is your comprehensive solution for data excellence. Our platform enables
+                thorough data quality assessment, resolves data inconsistency issues, and helps
+                synchronize data across your systems seamlessly.
+              </p>
+              <div className="features-highlight">
+                <div className="feature-point">
+                  <span className="feature-icon">🔍</span>
+                  <span>Data Quality Assessment</span>
+                </div>
+                <div className="feature-point">
+                  <span className="feature-icon">🔧</span>
+                  <span>Resolve Data Inconsistencies</span>
+                </div>
+                <div className="feature-point">
+                  <span className="feature-icon">🔄</span>
+                  <span>Seamless Data Synchronization</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="action-buttons">
+              <button
+                className="action-btn primary-action"
+                onClick={handleLogin}
+                aria-label="Access Data Sync functionality"
+              >
+                <span className="btn-icon">🔄</span>
+                <span className="btn-text">Data Sync</span>
+                <span className="btn-description">Synchronize and manage your data</span>
+              </button>
+
+              <button
+                className="action-btn secondary-action"
+                onClick={handleLogin}
+                aria-label="Access Data Quality tools"
+              >
+                <span className="btn-icon">📊</span>
+                <span className="btn-text">Data Quality</span>
+                <span className="btn-description">Assess and improve data quality</span>
+              </button>
+            </div>
           </div>
-          <div className="feature-card">
-            <h3>Data Export</h3>
-            <p>Export Salesforce data to external systems</p>
-          </div>
-          <div className="feature-card">
-            <h3>Real-time Sync</h3>
-            <p>Keep data synchronized in real-time</p>
-          </div>
-          <div className="feature-card">
-            <h3>Analytics</h3>
-            <p>Monitor and analyze sync operations</p>
+
+          <div className="background-elements">
+            <div className="floating-element element-1"></div>
+            <div className="floating-element element-2"></div>
+            <div className="floating-element element-3"></div>
           </div>
         </div>
       </main>
