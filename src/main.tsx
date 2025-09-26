@@ -1,9 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider as MuiThemeProvider, CssBaseline } from '@mui/material'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
+import { createMuiTheme } from './theme/muiTheme'
 import App from './App'
 import Login from './Login'
 import Signup from './Signup'
@@ -17,8 +19,10 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
+      <MuiThemeProvider theme={createMuiTheme(false)}>
+        <CssBaseline />
+        <AuthProvider>
+          <Router>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<App />} />
@@ -98,8 +102,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        </Router>
-      </AuthProvider>
+          </Router>
+        </AuthProvider>
+      </MuiThemeProvider>
     </ThemeProvider>
   </React.StrictMode>,
 )
