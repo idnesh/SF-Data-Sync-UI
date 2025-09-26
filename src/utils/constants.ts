@@ -1,5 +1,10 @@
 // Application constants
 
+// Feature flags
+export const FEATURE_FLAGS = {
+  ENABLE_LOGIN: false, // Set to true to enable login/signup functionality
+} as const;
+
 // Session and authentication
 export const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
 export const SESSION_STORAGE_KEY = 'sf_sync_session';

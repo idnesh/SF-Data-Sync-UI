@@ -8,6 +8,7 @@ import { MuiThemeWrapper } from './components/providers/MuiThemeWrapper'
 import App from './App'
 import Login from './Login'
 import Signup from './Signup'
+import HomePage from './pages/HomePage'
 import DashboardPage from './pages/DashboardPage'
 import DataCleansingPage from './pages/DataCleansingPage'
 import { JobWizard } from './features/create-job/JobWizard'
@@ -29,6 +30,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
           {/* Protected routes with tab navigation */}
           <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <LandingPageLayout title="R-DataX" subtitle="Your comprehensive solution for data excellence">
+                  <HomePage />
+                </LandingPageLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
@@ -44,7 +56,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             path="/create-job"
             element={
               <ProtectedRoute>
-                <LandingPageLayout title="Data Sync" subtitle="Create and manage data synchronization jobs">
+                <LandingPageLayout title="R-DataX" subtitle="Create and manage data synchronization jobs">
                   <JobWizard />
                 </LandingPageLayout>
               </ProtectedRoute>
@@ -55,7 +67,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             path="/jobs"
             element={
               <ProtectedRoute>
-                <LandingPageLayout title="Job Details" subtitle="View and manage all synchronization jobs">
+                <LandingPageLayout title="R-DataX" subtitle="View and manage all synchronization jobs">
                   <ViewJobsPage />
                 </LandingPageLayout>
               </ProtectedRoute>
@@ -66,7 +78,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             path="/data-cleansing"
             element={
               <ProtectedRoute>
-                <LandingPageLayout title="Data Quality" subtitle="AI-powered data cleansing and quality analysis">
+                <LandingPageLayout title="R-DataX" subtitle="AI-powered data cleansing and quality analysis">
                   <DataCleansingPage />
                 </LandingPageLayout>
               </ProtectedRoute>
@@ -98,7 +110,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           />
 
           {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
           </Router>
         </AuthProvider>

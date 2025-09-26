@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { FEATURE_FLAGS } from '../../utils/constants';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -37,8 +38,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
+  // Redirect to login if not authenticated (only when login is enabled)
+  if (!isAuthenticated && FEATURE_FLAGS.ENABLE_LOGIN) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 

@@ -2,25 +2,43 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import { ThemeToggle } from './components/common/ThemeToggle'
+import { FEATURE_FLAGS } from './utils/constants'
 import './App.css'
 
 function App() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // Redirect to dashboard if already authenticated
+  // Redirect to home page (default behavior) or dashboard if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (FEATURE_FLAGS.ENABLE_LOGIN && isAuthenticated) {
       navigate('/dashboard');
+    } else if (!FEATURE_FLAGS.ENABLE_LOGIN) {
+      // When login is disabled, redirect to home page
+      navigate('/home');
     }
   }, [isAuthenticated, navigate]);
 
+  // Login/Signup handlers - disabled when FEATURE_FLAGS.ENABLE_LOGIN is false
   const handleLogin = () => {
-    navigate('/login');
+    if (FEATURE_FLAGS.ENABLE_LOGIN) {
+      navigate('/login');
+    }
   };
 
   const handleSignup = () => {
-    navigate('/signup');
+    if (FEATURE_FLAGS.ENABLE_LOGIN) {
+      navigate('/signup');
+    }
+  };
+
+  // Direct navigation handlers for main functionality
+  const handleDataSync = () => {
+    navigate('/create-job');
+  };
+
+  const handleDataQuality = () => {
+    navigate('/data-cleansing');
   };
 
   return (
@@ -38,8 +56,13 @@ function App() {
         </div>
         <div className="header-buttons">
           <ThemeToggle />
-          <button className="btn btn-secondary" onClick={handleLogin}>Login</button>
-          <button className="btn" onClick={handleSignup}>Sign Up</button>
+          {/* Login/Signup buttons - only show when feature flag is enabled */}
+          {FEATURE_FLAGS.ENABLE_LOGIN && (
+            <>
+              <button className="btn btn-secondary" onClick={handleLogin}>Login</button>
+              <button className="btn" onClick={handleSignup}>Sign Up</button>
+            </>
+          )}
         </div>
       </header>
       <main className="App-main">
@@ -71,7 +94,7 @@ function App() {
             <div className="action-buttons">
               <button
                 className="action-btn primary-action"
-                onClick={handleLogin}
+                onClick={handleDataSync}
                 aria-label="Access Data Sync functionality"
               >
                 <span className="btn-icon">🔄</span>
@@ -81,7 +104,7 @@ function App() {
 
               <button
                 className="action-btn secondary-action"
-                onClick={handleLogin}
+                onClick={handleDataQuality}
                 aria-label="Access Data Quality tools"
               >
                 <span className="btn-icon">📊</span>

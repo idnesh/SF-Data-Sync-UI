@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, Tab, Box, useTheme, useMediaQuery } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import HomeIcon from '@mui/icons-material/Home';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SyncIcon from '@mui/icons-material/Sync';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
@@ -83,6 +84,12 @@ const TabContainer = styled(Box)(({ theme }) => ({
 
 // Tab configuration with MUI icons
 const tabs: TabConfig[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    route: '/home',
+    icon: <HomeIcon />
+  },
   {
     id: 'dashboard',
     label: 'Dashboard',

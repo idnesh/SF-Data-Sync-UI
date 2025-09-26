@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { FEATURE_FLAGS } from '../../utils/constants';
 
 interface HeaderProps {
   title?: string;
@@ -42,17 +43,22 @@ export const Header: React.FC<HeaderProps> = ({
           </h1>
         </div>
         <p className="header-subtitle">
-          {subtitle || `Welcome back, ${user?.fullName}`}
+          {subtitle || (FEATURE_FLAGS.ENABLE_LOGIN ? `Welcome back, ${user?.fullName}` : '')}
         </p>
       </div>
       <div className="header-buttons">
         <ThemeToggle />
-        <Button variant="outline" onClick={handleSettingsClick}>
-          Settings
-        </Button>
-        <Button variant="secondary" onClick={logout}>
-          Logout
-        </Button>
+        {/* Settings and Logout buttons - only show when feature flag is enabled */}
+        {FEATURE_FLAGS.ENABLE_LOGIN && (
+          <>
+            <Button variant="outline" onClick={handleSettingsClick}>
+              Settings
+            </Button>
+            <Button variant="secondary" onClick={logout}>
+              Logout
+            </Button>
+          </>
+        )}
       </div>
     </header>
   );
