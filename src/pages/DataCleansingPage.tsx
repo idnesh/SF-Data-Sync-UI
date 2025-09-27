@@ -103,16 +103,10 @@ const DataCleansingPage: React.FC = () => {
         count: 892,
         issues: [
           {
-            field: 'Address',
-            description: 'Inconsistent address formatting',
-            suggestion: 'Standardize address format using validation rules',
-            count: 534
-          },
-          {
             field: 'Name',
             description: 'Inconsistent name capitalization',
             suggestion: 'Apply title case formatting to all names',
-            count: 358
+            count: 892
           }
         ]
       },
@@ -271,9 +265,9 @@ const DataCleansingPage: React.FC = () => {
             <Button variant="outline" onClick={() => console.log('Export report')}>
               📊 Export Report
             </Button>
-            <Button variant="primary" onClick={() => console.log('Start cleansing')}>
+            {/* <Button variant="primary" onClick={() => console.log('Start cleansing')}>
               🧹 Start Cleansing
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -348,14 +342,6 @@ const DataCleansingPage: React.FC = () => {
                       </div>
                       <div className="issue-description">{issue.description}</div>
                       <div className="issue-suggestion">💡 {issue.suggestion}</div>
-                      <div className="issue-actions">
-                        <Button variant="outline" size="small">
-                          View Records
-                        </Button>
-                        <Button variant="primary" size="small">
-                          Auto-Fix
-                        </Button>
-                      </div>
                     </div>
                   ))}
                 </div>

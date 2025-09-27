@@ -2492,9 +2492,10 @@
 .breakdown-item {
   text-align: center;
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-secondary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .item-value {
@@ -2699,7 +2700,6 @@
 .issue-suggestion {
   color: var(--text-secondary);
   font-size: 0.95rem;
-  margin-bottom: 1.5rem;
   line-height: 1.5;
   padding: 1rem;
   background: var(--bg-secondary);
