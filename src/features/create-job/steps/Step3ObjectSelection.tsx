@@ -203,12 +203,12 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
 
   if (loadingObjects) {
     return (
-      <div className="step-container loading-state">
-        <div className="loading-content">
-          <div className="loading-spinner">
-            <svg className="spinner" viewBox="0 0 24 24">
+      <div className="ds-step-container ds-loading-state">
+        <div className="ds-loading-content">
+          <div className="ds-loading-spinner">
+            <svg className="ds-spinner" viewBox="0 0 24 24">
               <circle
-                className="spinner-circle"
+                className="ds-spinner-circle"
                 cx="12"
                 cy="12"
                 r="10"
@@ -224,35 +224,34 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
   }
 
   return (
-    <div className="step-container" role="main" aria-labelledby="step3-heading">
-      <div className="step-header">
-        <h4 id="step3-heading" className="step-title">Object Selection</h4>
-        <p className="step-description">
+    <div className="ds-step-container" role="main" aria-labelledby="step3-heading">
+      <div className="ds-step-header">
+        <p className="ds-step-description">
           Select source and target objects for synchronization. Source objects are what you'll sync from, and target objects are what you'll sync to.
         </p>
       </div>
 
       {error && (
-        <div className={`error-banner ${error.includes('offline') ? 'warning' : 'error'}`} role="alert">
-          <span className="error-icon">{error.includes('offline') ? '⚠️' : '❌'}</span>
+        <div className={`ds-error-banner ${error.includes('offline') ? 'ds-warning' : 'ds-error'}`} role="alert">
+          <span className="ds-error-icon">{error.includes('offline') ? '⚠️' : '❌'}</span>
           {error}
           {error.includes('offline') && (
-            <div className="error-details">
+            <div className="ds-error-details">
               The application will continue using cached data. Please check your network connection.
             </div>
           )}
         </div>
       )}
 
-      <div className="object-selection-container">
+      <div className="ds-object-selection-container">
 
-        <div className="objects-grid-container">
+        <div className="ds-objects-grid-container">
           {/* Source Objects Section */}
-          <div className="objects-section">
-            <div className="search-section">
-              <h5 className="section-title">
+          <div className="ds-objects-section">
+            <div className="ds-search-section">
+              <h5 className="ds-section-title">
                 Source Objects
-                <div id="source-search-help" className="field-help">
+                <div id="source-search-help" className="ds-field-help">
                   Found {filteredSourceObjects.length} object{filteredSourceObjects.length !== 1 ? 's' : ''}
                   {sourceSearchTerm && ` matching "${sourceSearchTerm}"`}
                 </div>
@@ -268,9 +267,9 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
               />
 
             </div>
-            <div className="objects-list" role="radiogroup" aria-labelledby="step3-heading">
+            <div className="ds-objects-list" role="radiogroup" aria-labelledby="step3-heading">
               {filteredSourceObjects.length === 0 ? (
-                <div className="no-objects">
+                <div className="ds-no-objects">
                   <p>No source objects found matching your search criteria.</p>
                   <Button
                     variant="outline"
@@ -299,10 +298,10 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
           </div>
 
           {/* Target Objects Section */}
-          <div className="objects-section">
-            <div className="search-section">
-              <h5 className="section-title">Target Objects
-                <div id="target-search-help" className="field-help">
+          <div className="ds-objects-section">
+            <div className="ds-search-section">
+              <h5 className="ds-section-title">Target Objects
+                <div id="target-search-help" className="ds-field-help">
                   Found {filteredTargetObjects.length} object{filteredTargetObjects.length !== 1 ? 's' : ''}
                   {targetSearchTerm && ` matching "${targetSearchTerm}"`}
                 </div>
@@ -317,9 +316,9 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
                 aria-describedby="target-search-help"
               />
             </div>
-            <div className="objects-list" role="radiogroup" aria-labelledby="step3-heading">
+            <div className="ds-objects-list" role="radiogroup" aria-labelledby="step3-heading">
               {filteredTargetObjects.length === 0 ? (
-                <div className="no-objects">
+                <div className="ds-no-objects">
                   <p>No target objects found matching your search criteria.</p>
                   <Button
                     variant="outline"
@@ -350,7 +349,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
         </div>
       </div>
 
-      <div className="step-actions">
+      <div className="ds-step-actions">
         <Button
           variant="outline"
           onClick={onPrevious}
@@ -369,7 +368,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
           Continue to Field Mapping
         </Button>
 
-        <div id="next-help" className="button-help">
+        <div id="next-help" className="ds-button-help">
           {!canProceed && 'Please select both source and target objects to continue'}
         </div>
       </div>
@@ -416,10 +415,10 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
   };
 
   return (
-    <div className={`object-card ${isSelected ? 'selected' : ''} ${object.isCustom ? 'custom' : ''} ${isTarget ? 'target' : 'source'}`}>
-      <div className="object-header">
+    <div className={`ds-object-card ${isSelected ? 'ds-selected' : ''} ${object.isCustom ? 'ds-custom' : ''} ${isTarget ? 'ds-target' : 'ds-source'}`}>
+      <div className="ds-object-header">
         <div
-          className="expand-toggle"
+          className="ds-expand-toggle"
           onClick={handleExpandToggle}
           onKeyDown={handleExpandKeyDown}
           role="button"
@@ -427,60 +426,60 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
           aria-expanded={isExpanded}
           aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${object.label}`}
         >
-          <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>▶</span>
+          <span className={`ds-expand-icon ${isExpanded ? 'ds-expanded' : ''}`}>▶</span>
         </div>
         <div
-          className="object-clickable-area"
+          className="ds-object-clickable-area"
           onClick={() => onSelect(object.name)}
           onKeyDown={(e) => onKeyDown(e, object.name)}
           role="radio"
           aria-checked={isSelected}
           tabIndex={0}
         >
-          <div className="object-icon">
+          <div className="ds-object-icon">
             {getObjectIcon(object.name, object.isCustom)}
           </div>
-          <div className="object-info">
-            <h3 className="object-label">
+          <div className="ds-object-info">
+            <h3 className="ds-object-label">
               {object.label}
-              {object.isCustom && <span className="custom-indicator">Custom</span>}
+              {object.isCustom && <span className="ds-custom-indicator">Custom</span>}
             </h3>
-            <div className="object-name">{object.name}</div>
+            <div className="ds-object-name">{object.name}</div>
           </div>
-          <div className="selection-indicator">
+          <div className="ds-selection-indicator">
             {isSelected && (
-              <span className="selected-icon" aria-hidden="true">✓</span>
+              <span className="ds-selected-icon" aria-hidden="true">✓</span>
             )}
           </div>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="object-details">
-          <div className="object-description">{object.description}</div>
-          <div className="object-metadata">
-            <div className="metadata-item">
-              <span className="metadata-label">API Name:</span>
-              <span className="metadata-value">{object.name}</span>
+        <div className="ds-object-details">
+          <div className="ds-object-description">{object.description}</div>
+          <div className="ds-object-metadata">
+            <div className="ds-metadata-item">
+              <span className="ds-metadata-label">API Name:</span>
+              <span className="ds-metadata-value">{object.name}</span>
             </div>
-            <div className="metadata-item">
-              <span className="metadata-label">Type:</span>
-              <span className="metadata-value">{object.isCustom ? 'Custom' : 'Standard'}</span>
+            <div className="ds-metadata-item">
+              <span className="ds-metadata-label">Type:</span>
+              <span className="ds-metadata-value">{object.isCustom ? 'Custom' : 'Standard'}</span>
             </div>
-            <div className="metadata-item">
-              <span className="metadata-label">Queryable:</span>
-              <span className="metadata-value">Yes</span>
+            <div className="ds-metadata-item">
+              <span className="ds-metadata-label">Queryable:</span>
+              <span className="ds-metadata-value">Yes</span>
             </div>
           </div>
 
-          <div className="fields-section">
-            <h4 className="fields-title">Fields</h4>
+          <div className="ds-fields-section">
+            <h4 className="ds-fields-title">Fields</h4>
             {isLoadingFields ? (
-              <div className="fields-loading">
-                <div className="loading-spinner-small">
-                  <svg className="spinner-small" viewBox="0 0 24 24">
+              <div className="ds-fields-loading">
+                <div className="ds-loading-spinner-small">
+                  <svg className="ds-spinner-small" viewBox="0 0 24 24">
                     <circle
-                      className="spinner-circle"
+                      className="ds-spinner-circle"
                       cx="12"
                       cy="12"
                       r="10"
@@ -492,7 +491,7 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
                 <span>Loading fields...</span>
               </div>
             ) : fields && fields.length > 0 ? (
-              <table className="table-dark">
+              <table className="ds-table-dark">
                 <thead>
                   <tr>
                     <th>Label</th>
@@ -511,7 +510,7 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
                 </tbody>
               </table>
             ) : (
-              <div className="no-fields">No fields available</div>
+              <div className="ds-no-fields">No fields available</div>
             )}
           </div>
         </div>
