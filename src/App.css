@@ -5706,7 +5706,7 @@
 .ds-objects-section {
   background: var(--bg-secondary);
   border-radius: var(--ds-radius-lg);
-  padding: var(--ds-spacing-lg);
+  padding: var(--ds-spacing-md);
   border: 1px solid var(--border-secondary);
   transition: all 0.3s ease;
 }
@@ -5728,8 +5728,10 @@
   margin-top: 0;
   margin-bottom: var(--ds-spacing-md);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--ds-spacing-xs);
+  align-items: center;
+  justify-content: space-between;
 }
 
 .ds-field-help {
@@ -5742,7 +5744,7 @@
 
 /* Objects List */
 .ds-objects-list {
-  max-height: calc(100vh - 576px);
+  max-height: calc(100vh - 535px);
   overflow-y: auto;
   padding-right: var(--ds-spacing-xs);
 }
@@ -5782,7 +5784,7 @@
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--ds-radius-md);
-  margin-bottom: var(--ds-spacing-md);
+  margin-bottom: var(--ds-spacing-sm);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   position: relative;
@@ -5818,8 +5820,8 @@
 .ds-object-header {
   display: flex;
   align-items: center;
-  padding: var(--ds-spacing-md);
-  gap: var(--ds-spacing-sm);
+  padding: var(--ds-spacing-xs);
+  gap: var(--ds-spacing-xs);
 }
 
 /* Expand Toggle */
