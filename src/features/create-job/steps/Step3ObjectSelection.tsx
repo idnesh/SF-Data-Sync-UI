@@ -3,10 +3,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { SalesforceObject } from '../types';
-import { MOCK_SFDC_OBJECTS_RESPONSE } from '../api/mockSfdcObjects';
 
 interface Step3ObjectSelectionProps {
-  selectedObject: string; // Keep for backward compatibility
   sourceObject: string;
   targetObject: string;
   onSelectObject: (objectName: string, type: 'source' | 'target') => void;
@@ -16,7 +14,6 @@ interface Step3ObjectSelectionProps {
 }
 
 export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
-  selectedObject, // Keep for backward compatibility
   sourceObject,
   targetObject,
   onSelectObject,
@@ -56,38 +53,17 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
 
         const data = await response.json();
 
-        // Transform the API response to match our SalesforceObject interface
-        const transformedObjects = data.sobjects?.map((sobject: any) => ({
-          name: sobject.name,
-          label: sobject.label || sobject.name, // Use label if available, fallback to name
-          apiName: sobject.name,
-          fieldCount: 0, // API doesn't provide field count in this endpoint
-          description: sobject.labelPlural ? `${sobject.labelPlural} - ${sobject.name}` : `Standard Salesforce object: ${sobject.name}`,
-          isCustom: sobject.custom || false
-        })) || [];
+        // Transform the API response (array of strings) to match our SalesforceObject interface
+        const transformedObjects = data.map((objectString: string) => ({
+          name: objectString,
+          isCustom: objectString.endsWith('__c') // Custom objects end with __c
+        }));
 
         setObjects(transformedObjects);
       } catch (err) {
         console.error('Error loading objects:', err);
         setError(`Failed to load Salesforce objects: ${err instanceof Error ? err.message : 'Unknown error'}`);
-
-        // Fallback to mock data if API call fails
-        try {
-          const transformedMockObjects = MOCK_SFDC_OBJECTS_RESPONSE.sobjects?.map((sobject: any) => ({
-            name: sobject.name,
-            label: sobject.label || sobject.name,
-            apiName: sobject.name,
-            fieldCount: 0,
-            description: sobject.labelPlural ? `${sobject.labelPlural} - ${sobject.name}` : `Standard Salesforce object: ${sobject.name}`,
-            isCustom: sobject.custom || false
-          })) || [];
-
-          setObjects(transformedMockObjects);
-          setError('Using offline data - API connection failed');
-        } catch (mockErr) {
-          console.error('Error loading mock data:', mockErr);
-          setObjects([]);
-        }
+        setObjects([]);
       } finally {
         setLoadingObjects(false);
       }
@@ -441,10 +417,8 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
           </div>
           <div className="ds-object-info">
             <h3 className="ds-object-label">
-              {object.label}
-              {object.isCustom && <span className="ds-custom-indicator">Custom</span>}
+              {object.name}
             </h3>
-            <div className="ds-object-name">{object.name}</div>
           </div>
           <div className="ds-selection-indicator">
             {isSelected && (
@@ -456,22 +430,6 @@ const ExpandableObjectCard: React.FC<ExpandableObjectCardProps> = ({
 
       {isExpanded && (
         <div className="ds-object-details">
-          <div className="ds-object-description">{object.description}</div>
-          <div className="ds-object-metadata">
-            <div className="ds-metadata-item">
-              <span className="ds-metadata-label">API Name:</span>
-              <span className="ds-metadata-value">{object.name}</span>
-            </div>
-            <div className="ds-metadata-item">
-              <span className="ds-metadata-label">Type:</span>
-              <span className="ds-metadata-value">{object.isCustom ? 'Custom' : 'Standard'}</span>
-            </div>
-            <div className="ds-metadata-item">
-              <span className="ds-metadata-label">Queryable:</span>
-              <span className="ds-metadata-value">Yes</span>
-            </div>
-          </div>
-
           <div className="ds-fields-section">
             <h4 className="ds-fields-title">Fields</h4>
             {isLoadingFields ? (

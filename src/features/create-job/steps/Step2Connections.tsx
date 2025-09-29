@@ -1,344 +1,265 @@
 // Step 2: Salesforce Connections Component
-import React, { useState, useEffect } from 'react';
-import { Input } from '../../../components/common/Input';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '../../../components/common/Button';
-import { ConnectionData, Environment, ENVIRONMENT_OPTIONS } from '../types';
+
+// New simplified types for org/environment selection
+export type SalesforceOrganization = 'service-cloud-mtmg' | 'sales-cloud-sales-mgmt' | 'marketing-cloud-hub' | 'experience-cloud-portal';
+export type SalesforceEnvironment = 'production' | 'sandbox' | 'development' | 'pre-production';
+
+interface OrganizationOption {
+  value: SalesforceOrganization;
+  label: string;
+  description: string;
+}
+
+interface EnvironmentOption {
+  value: SalesforceEnvironment;
+  label: string;
+  description: string;
+}
+
+interface ConnectionSelection {
+  organization: SalesforceOrganization | '';
+  environment: SalesforceEnvironment | '';
+}
 
 interface Step2ConnectionsProps {
-  sourceConnection: ConnectionData;
-  targetConnection: ConnectionData;
-  onConnect: (type: 'source' | 'target', connectionData: Omit<ConnectionData, 'isConnected'>) => Promise<void>;
   onNext: () => void;
   onPrevious: () => void;
   isLoading: boolean;
-  error: string | null;
 }
 
-interface ConnectionFormData {
-  username: string;
-  password: string;
-  securityToken: string;
-  environment: Environment;
-}
+// Available Salesforce Organizations
+const ORGANIZATIONS: OrganizationOption[] = [
+  {
+    value: 'service-cloud-mtmg',
+    label: 'Service Cloud - MTMG',
+    description: 'Multi-Tenant Management Group for Service Cloud'
+  },
+  {
+    value: 'sales-cloud-sales-mgmt',
+    label: 'Sales Cloud - Sales Management',
+    description: 'Sales Management and CRM Platform'
+  },
+  {
+    value: 'marketing-cloud-hub',
+    label: 'Marketing Cloud - Hub',
+    description: 'Marketing Automation and Customer Journey'
+  },
+  {
+    value: 'experience-cloud-portal',
+    label: 'Experience Cloud - Portal',
+    description: 'Customer and Partner Portal Platform'
+  }
+];
 
-// Move ConnectionPanel outside the main component to prevent re-creation
+// Available Environments
+const ENVIRONMENTS: EnvironmentOption[] = [
+  {
+    value: 'production',
+    label: 'Production',
+    description: 'Live production environment with real data'
+  },
+  {
+    value: 'sandbox',
+    label: 'Sandbox',
+    description: 'Testing environment with sample data'
+  },
+  {
+    value: 'development',
+    label: 'Development',
+    description: 'Development environment for testing'
+  },
+  {
+    value: 'pre-production',
+    label: 'Pre-Production',
+    description: 'Staging environment before production'
+  }
+];
+
 interface ConnectionPanelProps {
   type: 'source' | 'target';
   title: string;
-  form: ConnectionFormData;
-  connection: ConnectionData;
-  onChange: (field: keyof ConnectionFormData, value: string) => void;
-  onTest: () => void;
-  testingConnection: 'source' | 'target' | null;
+  connection: ConnectionSelection;
+  onConnectionChange: (connection: ConnectionSelection) => void;
+  validationError?: string;
 }
 
 const ConnectionPanel: React.FC<ConnectionPanelProps> = ({
   type,
   title,
-  form,
   connection,
-  onChange,
-  onTest,
-  testingConnection
+  onConnectionChange,
+  validationError
 }) => {
-  const isFormValid = (form: ConnectionFormData) => {
-    return form.username.trim() && form.password.trim();
+  const handleOrganizationChange = (organization: SalesforceOrganization | '') => {
+    onConnectionChange({
+      ...connection,
+      organization,
+      environment: '' // Reset environment when org changes
+    });
   };
 
+  const handleEnvironmentChange = (environment: SalesforceEnvironment | '') => {
+    onConnectionChange({
+      ...connection,
+      environment
+    });
+  };
+
+  const isFormValid = connection.organization && connection.environment;
+
   return (
-    <div className={`connection-panel ${connection.isConnected ? 'connected' : ''}`}>
-      <div className="panel-header">
-        <h3 className="panel-title">{title}</h3>
-        {connection.isConnected && (
-          <div className="connection-status success" role="status" aria-live="polite">
-            <span className="status-icon">✅</span>
-            <span className="status-text">Connected</span>
-          </div>
-        )}
-        {connection.connectionError && (
-          <div className="connection-status error" role="alert" aria-live="polite">
-            <span className="status-icon">❌</span>
-            <span className="status-text">Failed</span>
+    <div className={`ds-connections-panel ${isFormValid ? 'ds-connections-ready' : ''}`}>
+      <div className="ds-connections-panel-header">
+        <h3 className="ds-connections-panel-title">{title}</h3>
+      </div>
+
+      <div className="ds-connections-form">
+        {/* Organization Dropdown */}
+        <div className="ds-connections-form-group">
+          <label htmlFor={`${type}-organization`} className="ds-connections-form-label">
+            Organization <span className="ds-connections-required">*</span>
+          </label>
+          <select
+            id={`${type}-organization`}
+            value={connection.organization}
+            onChange={(e) => handleOrganizationChange(e.target.value as SalesforceOrganization)}
+            className="ds-connections-form-select"
+          >
+            <option value="">Select an organization...</option>
+            {ORGANIZATIONS.map(org => (
+              <option key={org.value} value={org.value}>
+                {org.label}
+              </option>
+            ))}
+          </select>
+          {connection.organization && (
+            <div className="ds-connections-form-help">
+              {ORGANIZATIONS.find(org => org.value === connection.organization)?.description}
+            </div>
+          )}
+        </div>
+
+        {/* Environment Dropdown */}
+        <div className="ds-connections-form-group">
+          <label htmlFor={`${type}-environment`} className="ds-connections-form-label">
+            Environment <span className="ds-connections-required">*</span>
+          </label>
+          <select
+            id={`${type}-environment`}
+            value={connection.environment}
+            onChange={(e) => handleEnvironmentChange(e.target.value as SalesforceEnvironment)}
+            className="ds-connections-form-select"
+            disabled={!connection.organization}
+          >
+            <option value="">Select an environment...</option>
+            {ENVIRONMENTS.map(env => (
+              <option key={env.value} value={env.value}>
+                {env.label}
+              </option>
+            ))}
+          </select>
+          {connection.environment && (
+            <div className="ds-connections-form-help">
+              {ENVIRONMENTS.find(env => env.value === connection.environment)?.description}
+            </div>
+          )}
+        </div>
+
+
+        {validationError && (
+          <div className="ds-connections-error" role="alert">
+            {validationError}
           </div>
         )}
       </div>
-
-      {connection.isConnected ? (
-        <div className="connection-success">
-          <div className="org-info">
-            <div className="org-name">{connection.orgName}</div>
-            <div className="connection-time">
-              Connected at {new Date(connection.connectionTimestamp!).toLocaleString()}
-            </div>
-            <div className="environment-badge">
-              {ENVIRONMENT_OPTIONS.find(opt => opt.value === connection.environment)?.label}
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="small"
-            onClick={() => {
-              // Reset connection by calling onConnect with empty credentials
-              // This will trigger the reset logic in the hook
-              onTest(); // This should be changed to a reset function, but keeping existing API
-            }}
-          >
-            Change Connection
-          </Button>
-        </div>
-      ) : (
-        <div className="connection-form">
-          <div className="form-grid">
-            <Input
-              type="email"
-              id={`${type}-username`}
-              name="username"
-              label="Username"
-              value={form.username}
-              onChange={(value) => onChange('username', value)}
-              placeholder="user@company.com"
-              required
-              autoComplete="username"
-              disabled={testingConnection === type}
-            />
-
-            <div className="form-group">
-              <label htmlFor={`${type}-environment`} className="form-label">
-                Environment <span className="required-asterisk">*</span>
-              </label>
-              <select
-                id={`${type}-environment`}
-                value={form.environment}
-                onChange={(e) => onChange('environment', e.target.value as Environment)}
-                className="form-select"
-                disabled={testingConnection === type}
-                required
-              >
-                {ENVIRONMENT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label} - {option.description}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Input
-              type="password"
-              id={`${type}-password`}
-              name="password"
-              label="Password"
-              value={form.password}
-              onChange={(value) => onChange('password', value)}
-              placeholder="Enter your Salesforce password"
-              required
-              autoComplete="current-password"
-              disabled={testingConnection === type}
-            />
-
-            <Input
-              type="password"
-              id={`${type}-token`}
-              name="securityToken"
-              label="Security Token"
-              value={form.securityToken}
-              onChange={(value) => onChange('securityToken', value)}
-              placeholder="Security token (if required)"
-              autoComplete="off"
-              disabled={testingConnection === type}
-            />
-          </div>
-
-          {connection.connectionError && (
-            <div className="error-message" role="alert">
-              <strong>Connection Failed:</strong> {connection.connectionError}
-              <div className="error-suggestions">
-                <p><strong>Common solutions:</strong></p>
-                <ul>
-                  <li>Verify your username and password are correct</li>
-                  <li>Check if your IP address is in the trusted IP ranges</li>
-                  <li>Ensure you have the correct security token (if required)</li>
-                  <li>Verify the environment selection matches your org type</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          <div className="panel-actions">
-            <Button
-              variant="primary"
-              onClick={onTest}
-              disabled={!isFormValid(form) || testingConnection === type}
-              loading={testingConnection === type}
-              aria-describedby={`${type}-test-help`}
-            >
-              {testingConnection === type ? 'Testing Connection...' : 'Test Connection'}
-            </Button>
-            <div id={`${type}-test-help`} className="button-help">
-              {!isFormValid(form) && 'Please enter username and password'}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export const Step2Connections: React.FC<Step2ConnectionsProps> = ({
-  sourceConnection,
-  targetConnection,
-  onConnect,
   onNext,
   onPrevious,
-  isLoading,
-  error
+  isLoading
 }) => {
-  const [sourceForm, setSourceForm] = useState<ConnectionFormData>(() => ({
-    username: sourceConnection.username || '',
-    password: sourceConnection.password || '',
-    securityToken: sourceConnection.securityToken || '',
-    environment: sourceConnection.environment || 'production'
-  }));
+  const [sourceConnection, setSourceConnection] = useState<ConnectionSelection>({
+    organization: '',
+    environment: ''
+  });
 
-  const [targetForm, setTargetForm] = useState<ConnectionFormData>(() => ({
-    username: targetConnection.username || '',
-    password: targetConnection.password || '',
-    securityToken: targetConnection.securityToken || '',
-    environment: targetConnection.environment || 'sandbox'
-  }));
+  const [targetConnection, setTargetConnection] = useState<ConnectionSelection>({
+    organization: '',
+    environment: ''
+  });
 
-  const [testingConnection, setTestingConnection] = useState<'source' | 'target' | null>(null);
+  // Validation logic
+  const validationResult = useMemo(() => {
+    const errors: string[] = [];
 
-  // Only sync when connection is successfully made or reset
-  useEffect(() => {
-    if (sourceConnection.isConnected && sourceConnection.orgName) {
-      // Connection successful - keep current form state
-      return;
-    }
-    if (!sourceConnection.isConnected && !sourceConnection.username && !sourceConnection.password) {
-      // Connection was reset - clear form
-      setSourceForm({
-        username: '',
-        password: '',
-        securityToken: '',
-        environment: sourceConnection.environment || 'production'
-      });
-    }
-  }, [sourceConnection.isConnected, sourceConnection.orgName]);
-
-  useEffect(() => {
-    if (targetConnection.isConnected && targetConnection.orgName) {
-      // Connection successful - keep current form state
-      return;
-    }
-    if (!targetConnection.isConnected && !targetConnection.username && !targetConnection.password) {
-      // Connection was reset - clear form
-      setTargetForm({
-        username: '',
-        password: '',
-        securityToken: '',
-        environment: targetConnection.environment || 'sandbox'
-      });
-    }
-  }, [targetConnection.isConnected, targetConnection.orgName]);
-
-  const handleSourceChange = (field: keyof ConnectionFormData, value: string) => {
-    setSourceForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleTargetChange = (field: keyof ConnectionFormData, value: string) => {
-    setTargetForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleTestConnection = async (type: 'source' | 'target') => {
-    const formData = type === 'source' ? sourceForm : targetForm;
-
-    if (!formData.username || !formData.password) {
-      return;
+    // Check if same org and same environment are selected
+    if (
+      sourceConnection.organization &&
+      targetConnection.organization &&
+      sourceConnection.environment &&
+      targetConnection.environment &&
+      sourceConnection.organization === targetConnection.organization &&
+      sourceConnection.environment === targetConnection.environment
+    ) {
+      errors.push('Source and target cannot use the same organization and environment combination');
     }
 
-    setTestingConnection(type);
-    try {
-      await onConnect(type, formData);
-    } finally {
-      setTestingConnection(null);
-    }
-  };
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }, [sourceConnection, targetConnection]);
 
-  const canProceed = sourceConnection.isConnected && targetConnection.isConnected;
+  const canProceed = sourceConnection.organization &&
+                   sourceConnection.environment &&
+                   targetConnection.organization &&
+                   targetConnection.environment &&
+                   validationResult.isValid;
 
   return (
-    <div className="step-container" role="main" aria-labelledby="step2-heading">
+    <div className="step-container">
       <div className="step-header">
-        <h4 id="step2-heading" className="step-title">Salesforce Connections</h4>
+        <h4 className="step-title">Salesforce Connections</h4>
         <p className="step-description">
-          Connect to your source and target Salesforce organizations. Both connections must be successful to proceed.
+          Select your source and target Salesforce organizations and environments.
+          You can connect to the same organization with different environments or different organizations with any environment.
         </p>
       </div>
 
-      {error && (
-        <div className="error-banner" role="alert">
-          {error}
+      {!validationResult.isValid && (
+        <div className="ds-connections-validation-error" role="alert">
+          <strong>⚠️ Connection Validation Error:</strong>
+          <ul>
+            {validationResult.errors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
         </div>
       )}
 
-      <div className="connections-grid">
+      <div className="ds-connections-grid">
         <ConnectionPanel
           type="source"
           title="Source Organization"
-          form={sourceForm}
           connection={sourceConnection}
-          onChange={handleSourceChange}
-          onTest={() => handleTestConnection('source')}
-          testingConnection={testingConnection}
+          onConnectionChange={setSourceConnection}
+          validationError={!validationResult.isValid ? validationResult.errors[0] : undefined}
         />
 
         <ConnectionPanel
           type="target"
           title="Target Organization"
-          form={targetForm}
           connection={targetConnection}
-          onChange={handleTargetChange}
-          onTest={() => handleTestConnection('target')}
-          testingConnection={testingConnection}
+          onConnectionChange={setTargetConnection}
+          validationError={!validationResult.isValid ? validationResult.errors[0] : undefined}
         />
       </div>
 
-      <div className="connection-flow-indicator">
-        <div className="flow-item">
-          <span className="flow-label">Source</span>
-          <div className={`flow-status ${sourceConnection.isConnected ? 'connected' : 'pending'}`}>
-            {sourceConnection.isConnected ? '✅' : '⏳'}
-          </div>
-        </div>
-        <div className="flow-arrow">→</div>
-        <div className="flow-item">
-          <span className="flow-label">Target</span>
-          <div className={`flow-status ${targetConnection.isConnected ? 'connected' : 'pending'}`}>
-            {targetConnection.isConnected ? '✅' : '⏳'}
-          </div>
-        </div>
-      </div>
-
-      <div className="connection-summary">
-        <div className="summary-item">
-          <span className="summary-label">Source:</span>
-          <span className="summary-value">
-            {sourceConnection.isConnected
-              ? `${sourceConnection.orgName} (${sourceConnection.environment})`
-              : 'Not connected'
-            }
-          </span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Target:</span>
-          <span className="summary-value">
-            {targetConnection.isConnected
-              ? `${targetConnection.orgName} (${targetConnection.environment})`
-              : 'Not connected'
-            }
-          </span>
-        </div>
-      </div>
 
       <div className="step-actions">
         <Button
@@ -354,14 +275,9 @@ export const Step2Connections: React.FC<Step2ConnectionsProps> = ({
           onClick={onNext}
           disabled={!canProceed || isLoading}
           loading={isLoading}
-          aria-describedby="next-help"
         >
           Continue to Object Selection
         </Button>
-
-        <div id="next-help" className="button-help">
-          {!canProceed && 'Please establish both source and target connections to continue'}
-        </div>
       </div>
     </div>
   );

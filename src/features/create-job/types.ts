@@ -1,23 +1,10 @@
 // Types and interfaces for the Job Creation Wizard
 
-export type Environment = 'production' | 'sandbox' | 'developer';
-
 export type ScheduleOption = 'manual' | '30min' | '1hour' | '2hours' | '6hours' | '12hours' | 'daily' | 'weekly' | '2weeks' | 'monthly' | 'custom';
 
 export type ValidationStatus = 'valid' | 'warning' | 'incompatible';
 
 export type TransformationType = 'none' | 'script' | 'builtin';
-
-export interface ConnectionData {
-  username: string;
-  password: string;
-  securityToken?: string;
-  environment: Environment;
-  orgName?: string;
-  isConnected?: boolean;
-  connectionTimestamp?: string;
-  connectionError?: string;
-}
 
 export interface SalesforceObject {
   name: string;
@@ -89,8 +76,6 @@ export interface JobData {
   id?: string;
   name: string;
   description?: string;
-  sourceConnection: ConnectionData;
-  targetConnection: ConnectionData;
   selectedObject: string; // Keep for backward compatibility
   sourceObject: string;
   targetObject: string;
@@ -139,21 +124,6 @@ export interface WizardState {
 }
 
 // API Request/Response types
-export interface ConnectOrgRequest {
-  username: string;
-  password: string;
-  securityToken?: string;
-  environment: Environment;
-  type: 'source' | 'target';
-}
-
-export interface ConnectOrgResponse {
-  success: boolean;
-  orgName?: string;
-  orgId?: string;
-  error?: string;
-}
-
 export interface ListObjectsRequest {
   connectionId: string;
 }
@@ -176,8 +146,6 @@ export interface GetFieldsResponse {
 }
 
 export interface ValidateFieldsRequest {
-  sourceOrg: ConnectionData;
-  targetOrg: ConnectionData;
   object: string;
   mappings: FieldMapping;
   transformations: Record<string, Transformation>;
@@ -204,8 +172,6 @@ export interface TestJobResponse {
 export interface CreateJobRequest {
   name: string;
   description?: string;
-  sourceConnection: ConnectionData;
-  targetConnection: ConnectionData;
   object: string;
   mappings: FieldMapping;
   transformations: Record<string, Transformation>;
@@ -245,9 +211,3 @@ export const SCHEDULE_OPTIONS = [
   { value: 'custom', label: 'Custom (Cron)', description: 'Custom cron expression' }
 ] as const;
 
-// Environment options
-export const ENVIRONMENT_OPTIONS = [
-  { value: 'production', label: 'Production', description: 'Live production environment' },
-  { value: 'sandbox', label: 'Sandbox', description: 'Testing/staging environment' },
-  { value: 'developer', label: 'Developer', description: 'Development environment' }
-] as const;
