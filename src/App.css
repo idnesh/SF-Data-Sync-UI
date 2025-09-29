@@ -1164,27 +1164,30 @@
 
 /* Step Container */
 .step-container {
-  margin: 0 20px;
+  margin: 0 auto;
+  width: 90%;
 }
 
 .step-header {
-  margin-bottom: 1rem;
+  text-align: left;
+  margin-bottom: var(--ds-spacing-md);
+  padding-bottom: var(--ds-spacing-md);
+  border-bottom: 1px solid var(--border-secondary);
 }
 
 .step-header .step-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.8px;
-  margin-bottom: 0.5rem;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 var(--ds-spacing-xs) 0;
+  text-align: left;
   transition: color 0.3s ease;
 }
 
 .step-header .step-description {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.4;
   font-weight: 400;
   margin: 0;
   transition: color 0.3s ease;
@@ -3812,7 +3815,7 @@
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   margin-bottom: 0.75rem;
-  max-height: calc(100vh - 585px);
+  max-height: calc(100vh - 430px);
   overflow: auto;
 }
 
@@ -6659,8 +6662,8 @@
 
 /* Compact Step Header */
 .ds-step-header-compact {
-  text-align: center;
-  margin-bottom: var(--ds-spacing-lg);
+  text-align: left;
+  margin-bottom: var(--ds-spacing-md);
   padding-bottom: var(--ds-spacing-md);
   border-bottom: 1px solid var(--border-secondary);
 }
@@ -6778,5 +6781,167 @@
 
   .ds-field-compact {
     border-width: 2px;
+  }
+}
+
+/* Step 1 Details - Compact Design */
+
+/* Form */
+.ds-details-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-lg);
+  padding: 0;
+}
+
+.ds-details-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-md);
+}
+
+/* Field Container */
+.ds-details-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-xs);
+}
+
+.ds-details-input {
+  font-size: 0.95rem;
+}
+
+/* Custom Label for Textarea */
+.ds-details-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: var(--ds-spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-xs);
+}
+
+.ds-details-optional {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Textarea */
+.ds-details-textarea {
+  width: 100%;
+  padding: var(--ds-spacing-sm);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--ds-radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.4;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.ds-details-textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.ds-details-textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
+.ds-details-textarea.ds-details-error {
+  border-color: var(--bg-danger);
+  background: rgba(220, 53, 69, 0.05);
+}
+
+/* Textarea Footer */
+.ds-details-textarea-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--ds-spacing-xs);
+}
+
+.ds-details-counter {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.ds-details-counter.ds-details-warning {
+  color: var(--bg-warning);
+  font-weight: 500;
+}
+
+/* Error Message */
+.ds-details-error-message {
+  font-size: 0.85rem;
+  color: var(--bg-danger);
+  margin-top: var(--ds-spacing-xs);
+  padding: var(--ds-spacing-xs);
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: var(--ds-radius-xs);
+  border-left: 3px solid var(--bg-danger);
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ds-details-form {
+    max-width: 100%;
+    padding: var(--ds-spacing-md);
+  }
+
+
+  .ds-details-section {
+    gap: var(--ds-spacing-sm);
+  }
+
+  .ds-details-textarea {
+    font-size: 0.85rem;
+    min-height: 70px;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .ds-details-form {
+    padding: var(--ds-spacing-sm);
+  }
+
+
+  .ds-details-form {
+    gap: var(--ds-spacing-md);
+  }
+
+  .ds-details-textarea {
+    padding: var(--ds-spacing-xs);
+    font-size: 0.8rem;
+  }
+
+
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .ds-details-textarea {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .ds-details-textarea {
+    border-width: 2px;
+  }
+
+  .ds-details-textarea.ds-details-error {
+    border-width: 3px;
   }
 }

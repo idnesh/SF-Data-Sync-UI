@@ -212,7 +212,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onExit }) => {
         <main className="wizard-content">
           {/* Wizard Header moved inside content */}
           <header className="wizard-header">
-            <h3 id="wizard-heading">Create Sync Job</h3>
+            <h3 id="wizard-heading"></h3>
             <div className="header-actions">
               <Button
                 variant="outline"

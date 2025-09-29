@@ -1,5 +1,5 @@
 // Step 2: Salesforce Connections Component
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from '../../../components/common/Button';
 
 // New simplified types for org/environment selection
@@ -193,6 +193,44 @@ export const Step2Connections: React.FC<Step2ConnectionsProps> = ({
     environment: ''
   });
 
+  // Load saved connections from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSourceConnection = localStorage.getItem('jobWizard_sourceConnection');
+      const savedTargetConnection = localStorage.getItem('jobWizard_targetConnection');
+
+      if (savedSourceConnection) {
+        const parsedSource = JSON.parse(savedSourceConnection);
+        setSourceConnection(parsedSource);
+      }
+
+      if (savedTargetConnection) {
+        const parsedTarget = JSON.parse(savedTargetConnection);
+        setTargetConnection(parsedTarget);
+      }
+    } catch (error) {
+      console.error('Error loading saved connections:', error);
+    }
+  }, []);
+
+  // Save source connection to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('jobWizard_sourceConnection', JSON.stringify(sourceConnection));
+    } catch (error) {
+      console.error('Error saving source connection:', error);
+    }
+  }, [sourceConnection]);
+
+  // Save target connection to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('jobWizard_targetConnection', JSON.stringify(targetConnection));
+    } catch (error) {
+      console.error('Error saving target connection:', error);
+    }
+  }, [targetConnection]);
+
   // Validation logic
   const validationResult = useMemo(() => {
     const errors: string[] = [];
@@ -224,7 +262,7 @@ export const Step2Connections: React.FC<Step2ConnectionsProps> = ({
   return (
     <div className="step-container">
       <div className="step-header">
-        <h4 className="step-title">Salesforce Connections</h4>
+        <h4 className="step-title">Connections</h4>
         <p className="step-description">
           Select your source and target Salesforce organizations and environments.
           You can connect to the same organization with different environments or different organizations with any environment.
