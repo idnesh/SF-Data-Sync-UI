@@ -428,10 +428,6 @@ const DataCleansingPage: React.FC = () => {
             <div className="stat-number">15</div>
             <div className="stat-label">Quality Checks</div>
           </div>
-          <div className="stat-item">
-            <div className="stat-number">3</div>
-            <div className="stat-label">AI Models</div>
-          </div>
         </div>
       </div>
     </div>
@@ -445,7 +441,7 @@ const DataCleansingPage: React.FC = () => {
         <div className="dc-results-header">
           <div className="dc-header-content">
             <div className="dc-header-text">
-              <h2 className="dc-results-title">Data Quality Analysis Complete</h2>
+              <h2 className="dc-results-title">Data Quality Analysis</h2>
               <p className="dc-results-subtitle">Comprehensive analysis of {results.totalRecords.toLocaleString()} records</p>
             </div>
             <div className="dc-header-actions">

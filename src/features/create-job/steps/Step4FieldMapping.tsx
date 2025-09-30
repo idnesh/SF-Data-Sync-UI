@@ -77,12 +77,6 @@ const getConfidenceLevel = (score: number): string => {
   return 'low';
 };
 
-const getConfidenceLabel = (score: number): string => {
-  if (score >= 90) return 'High';
-  if (score >= 75) return 'Medium';
-  return 'Low';
-};
-
 export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   fieldMappings,
   selectedFields,
@@ -397,7 +391,6 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
               <div className="confidence-score">
                 <div className={`confidence-badge confidence-${getConfidenceLevel(row.confidenceScore)}`}>
                   <span className="confidence-value">{row.confidenceScore}%</span>
-                  <span className="confidence-level">{getConfidenceLabel(row.confidenceScore)}</span>
                 </div>
               </div>
 
