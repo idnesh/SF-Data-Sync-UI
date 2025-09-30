@@ -393,44 +393,44 @@ const DataCleansingPage: React.FC = () => {
   };
 
   const renderProcessing = () => (
-    <div className="dc-processing-screen">
-      <div className="dc-processing-container">
-        <div className="dc-ai-logo">
-          <div className="dc-ai-circle">
+    <div className="processing-screen">
+      <div className="processing-container">
+        <div className="ai-logo">
+          <div className="ai-circle">
             🧠
           </div>
         </div>
 
-        <h2 className="dc-processing-title">AI-Powered Analysis in Progress</h2>
-        <p className="dc-processing-subtitle">Our advanced algorithms are analyzing your data quality...</p>
+        <h2>AI-Powered Analysis in Progress</h2>
+        <p>Our advanced algorithms are analyzing your data quality...</p>
 
-        <div className="dc-progress-container">
-          <div className="dc-progress-bar">
+        <div className="progress-container">
+          <div className="progress-bar">
             <div
-              className="dc-progress-fill"
+              className="progress-fill"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="dc-progress-text">{Math.round(progress)}% Complete</div>
+          <div className="progress-text">{Math.round(progress)}% Complete</div>
         </div>
 
-        <div className="dc-processing-step">
-          <span className="dc-step-icon">⚙️</span>
+        <div className="processing-step">
+          <span className="step-icon">⚙️</span>
           <span>{processingStep}</span>
         </div>
 
-        <div className="dc-processing-stats">
-          <div className="dc-stat-item">
-            <div className="dc-stat-number">28,750</div>
-            <div className="dc-stat-label">Records Analyzed</div>
+        <div className="processing-stats">
+          <div className="stat-item">
+            <div className="stat-number">28,750</div>
+            <div className="stat-label">Records Analyzed</div>
           </div>
-          <div className="dc-stat-item">
-            <div className="dc-stat-number">15</div>
-            <div className="dc-stat-label">Quality Checks</div>
+          <div className="stat-item">
+            <div className="stat-number">15</div>
+            <div className="stat-label">Quality Checks</div>
           </div>
-          <div className="dc-stat-item">
-            <div className="dc-stat-number">3</div>
-            <div className="dc-stat-label">AI Models</div>
+          <div className="stat-item">
+            <div className="stat-number">3</div>
+            <div className="stat-label">AI Models</div>
           </div>
         </div>
       </div>
