@@ -306,33 +306,6 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
         </div>
       </div>
 
-      {/* Validation Summary */}
-      {!validationResults.isValid && (
-        <div className="validation-summary">
-          <h5>⚠️ Validation Issues</h5>
-          <ul>
-            {validationResults.duplicateTargetFields.size > 0 && (
-              <li>Duplicate target field mappings detected</li>
-            )}
-            {!validationResults.hasAnyMapping && (
-              <li>At least one field mapping is required</li>
-            )}
-            {validationResults.emptySourceFields.length > 0 && (
-              <li>{validationResults.emptySourceFields.length} empty source field(s) found</li>
-            )}
-            {validationResults.invalidSourceFields.length > 0 && (
-              <li>{validationResults.invalidSourceFields.length} invalid source field name(s) found</li>
-            )}
-            {validationResults.unmappedFields.length > 0 && (
-              <li>{validationResults.unmappedFields.length} source field(s) not mapped to target</li>
-            )}
-            {validationResults.totalMappings > validationResults.maxRecommendedMappings && (
-              <li>Too many mappings ({validationResults.totalMappings}/{validationResults.maxRecommendedMappings} max recommended)</li>
-            )}
-          </ul>
-        </div>
-      )}
-
       <div className="field-mapping-table">
         <div className="table-header">
           <div className="column-header">Source Field (Account)</div>
@@ -399,38 +372,45 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
               <div className="actions">
                 {row.isEditing ? (
                   <div className="edit-actions">
-                    <Button
-                      variant="primary"
-                      size="small"
-                      onClick={() => handleEditSave(row.sourceField)}
-                      disabled={isDuplicate}
+                    <span
+                      className={`action-icon save-icon ${isDuplicate ? 'disabled' : ''}`}
+                      onClick={isDuplicate ? undefined : () => handleEditSave(row.sourceField)}
+                      aria-label="Save mapping"
+                      role="button"
+                      tabIndex={isDuplicate ? -1 : 0}
                     >
                       <CheckIcon fontSize="small" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="small"
+                    </span>
+                    <span
+                      className="action-icon cancel-icon"
                       onClick={() => handleEditCancel(row.sourceField)}
+                      aria-label="Cancel edit"
+                      role="button"
+                      tabIndex={0}
                     >
                       <CloseIcon fontSize="small" />
-                    </Button>
+                    </span>
                   </div>
                 ) : (
                   <div className="row-actions edit-actions">
-                    <Button
-                      variant="outline"
-                      size="small"
+                    <span
+                      className="action-icon edit-icon"
                       onClick={() => handleEditStart(row.sourceField, row.targetField)}
+                      aria-label="Edit mapping"
+                      role="button"
+                      tabIndex={0}
                     >
                       <EditIcon fontSize="small" />
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="small"
+                    </span>
+                    <span
+                      className="action-icon delete-icon"
                       onClick={() => handleDelete(row.sourceField)}
+                      aria-label="Delete mapping"
+                      role="button"
+                      tabIndex={0}
                     >
                       <DeleteIcon fontSize="small" />
-                    </Button>
+                    </span>
                   </div>
                 )}
               </div>
