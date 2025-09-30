@@ -50,24 +50,14 @@ const SALESFORCE_FIELDS = [
 
 // Default field mappings for Account source to Account__c target
 const DEFAULT_MAPPINGS: MappingRow[] = [
-  { sourceField: 'Name', sourceLabel: 'Name', targetField: 'Account_Name__c', isEditing: false, confidenceScore: 88 },
-  { sourceField: 'Account_Owner', sourceLabel: 'Account_Owner', targetField: 'Account_Owner__c', isEditing: false, confidenceScore: 95 },
-  { sourceField: 'Billing_Address_Line_1', sourceLabel: 'Billing_Address_Line_1', targetField: 'Billing_Address_Line_1__c', isEditing: false, confidenceScore: 97 },
-  { sourceField: 'Billing_Address_Line_2', sourceLabel: 'Billing_Address_Line_2', targetField: 'Billing_Address_Line_2__c', isEditing: false, confidenceScore: 97 },
-  { sourceField: 'Billing_City', sourceLabel: 'Billing_City', targetField: 'Billing_City__c', isEditing: false, confidenceScore: 94 },
-  { sourceField: 'Billing_Country', sourceLabel: 'Billing_Country', targetField: 'Billing_Country__c', isEditing: false, confidenceScore: 93 },
-  { sourceField: 'Billing_StateProvince', sourceLabel: 'Billing_StateProvince', targetField: 'Billing_StateProvince__c', isEditing: false, confidenceScore: 96 },
-  { sourceField: 'Billing_Street', sourceLabel: 'Billing_Street', targetField: 'Billing_Street__c', isEditing: false, confidenceScore: 91 },
-  { sourceField: 'Billing_ZipPostal_Code', sourceLabel: 'Billing_ZipPostal_Code', targetField: 'Billing_ZipPostal_Code__c', isEditing: false, confidenceScore: 98 },
-  { sourceField: 'CreatedById', sourceLabel: 'CreatedById', targetField: 'CreatedById', isEditing: false, confidenceScore: 99 },
-  { sourceField: 'Last_Activity', sourceLabel: 'Last_Activity', targetField: 'Last_Activity__c', isEditing: false, confidenceScore: 85 },
-  { sourceField: 'LastModifiedById', sourceLabel: 'LastModifiedById', targetField: 'LastModifiedById', isEditing: false, confidenceScore: 99 },
-  { sourceField: 'Last_Modified_Date', sourceLabel: 'Last_Modified_Date', targetField: 'Last_Modified_Date__c', isEditing: false, confidenceScore: 92 },
+  { sourceField: 'Name', sourceLabel: 'Name', targetField: 'Account_Name__c', isEditing: false, confidenceScore: 95 },
   { sourceField: 'OwnerId', sourceLabel: 'OwnerId', targetField: 'OwnerId', isEditing: false, confidenceScore: 99 },
-  { sourceField: 'Phone', sourceLabel: 'Phone', targetField: 'Phone__c', isEditing: false, confidenceScore: 86 },
-  { sourceField: 'Rating', sourceLabel: 'Rating', targetField: 'Rating__c', isEditing: false, confidenceScore: 89 },
-  { sourceField: 'Type', sourceLabel: 'Type', targetField: 'Type__c', isEditing: false, confidenceScore: 82 },
-  { sourceField: 'Id', sourceLabel: 'Id', targetField: 'extid__c', isEditing: false, confidenceScore: 75 }
+  { sourceField: 'BillingAddress', sourceLabel: 'BillingAddress', targetField: 'Billing_Address_Line_1__c', isEditing: false, confidenceScore: 92 },
+  { sourceField: 'CreatedById', sourceLabel: 'CreatedById', targetField: 'CreatedById', isEditing: false, confidenceScore: 99 },
+  { sourceField: 'Phone', sourceLabel: 'Phone', targetField: 'Phone__c', isEditing: false, confidenceScore: 90 },
+  { sourceField: 'Rating', sourceLabel: 'Rating', targetField: 'Rating__c', isEditing: false, confidenceScore: 88 },
+  { sourceField: 'Type', sourceLabel: 'Type', targetField: 'Type__c', isEditing: false, confidenceScore: 87 },
+  { sourceField: 'Id', sourceLabel: 'Id', targetField: 'extid__c', isEditing: false, confidenceScore: 85 }
 ];
 
 // Helper functions for confidence scoring
