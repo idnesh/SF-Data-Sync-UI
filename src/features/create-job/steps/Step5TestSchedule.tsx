@@ -48,6 +48,11 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   // Main Job Schedule State
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleOption>(jobData.schedule || 'manual');
+
+  // API call state
+  const [isCreatingJob, setIsCreatingJob] = useState(false);
+  const [jobCreationStatus, setJobCreationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [jobCreationMessage, setJobCreationMessage] = useState<string>('');
   const [startDate, setStartDate] = useState<string>(jobData.startDate || '');
   const [startTime, setStartTime] = useState<string>(jobData.startTime || '');
   const [endDate, setEndDate] = useState<string>(jobData.endDate || '');
@@ -141,6 +146,81 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
       console.error('Test failed:', err);
     } finally {
       setIsTestRunning(false);
+    }
+  };
+
+  const handleCreateJob = async () => {
+    if (!canProceed) {
+      return;
+    }
+
+    setIsCreatingJob(true);
+    setJobCreationStatus('idle');
+    setJobCreationMessage('');
+
+    try {
+      // Convert schedule to frequency and timeUnit
+      const scheduleMapping: { [key in ScheduleOption]: { frequency: string; timeUnit: string } } = {
+        'manual': { frequency: '0', timeUnit: 'MANUAL' },
+        '30min': { frequency: '30', timeUnit: 'MINUTES' },
+        '1hour': { frequency: '1', timeUnit: 'HOURS' },
+        '6hours': { frequency: '6', timeUnit: 'HOURS' },
+        '12hours': { frequency: '12', timeUnit: 'HOURS' },
+        'daily': { frequency: '1', timeUnit: 'DAYS' },
+        'weekly': { frequency: '1', timeUnit: 'WEEKS' },
+        '2weeks': { frequency: '2', timeUnit: 'WEEKS' },
+        'monthly': { frequency: '1', timeUnit: 'MONTHS' },
+        'custom': { frequency: '0', timeUnit: 'CRON' },
+      };
+
+      // Create ISO date strings
+      const fromDate = new Date(`${startDate}T${startTime}:00.000Z`).toISOString();
+      const toDate = new Date(`${endDate}T${endTime}:00.000Z`).toISOString();
+
+      // Convert fieldMappings object to API format array
+      const fieldMappingArray = Object.entries(jobData.fieldMappings || {}).map(([sourceField, targetField]) => ({
+        source: sourceField,
+        sourceType: "String", // Default to String, could be enhanced with actual field types
+        target: targetField,
+        targetType: "String"
+      }));
+
+      const requestBody: any = {
+        name: jobData.name,
+        schedule: scheduleMapping[selectedSchedule],
+        fromDate,
+        toDate,
+        sourceObject: jobData.sourceObject,
+        targetObject: jobData.targetObject,
+        extId: jobData.extId || 'extid__c',
+        fieldMaping: fieldMappingArray
+      };
+
+      const response = await fetch('https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/syncsfdc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        setJobCreationStatus('success');
+        setJobCreationMessage('Job created successfully! Your sync job has been scheduled.');
+        // Wait 2 seconds then proceed to next step
+        setTimeout(() => {
+          onNext();
+        }, 2000);
+      } else {
+        const errorData = await response.text();
+        setJobCreationStatus('error');
+        setJobCreationMessage(`Failed to create job: ${response.status} ${response.statusText}. ${errorData}`);
+      }
+    } catch (error) {
+      setJobCreationStatus('error');
+      setJobCreationMessage(`Failed to create job: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
+    } finally {
+      setIsCreatingJob(false);
     }
   };
 
@@ -534,18 +614,33 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         <div className="ds-schedule-action-main">
           <Button
             variant="primary"
-            onClick={onNext}
-            disabled={!canProceed || isLoading}
-            loading={isLoading}
+            onClick={handleCreateJob}
+            disabled={!canProceed || isLoading || isCreatingJob}
+            loading={isCreatingJob}
             className="ds-schedule-create-button"
           >
-            Create Job
+            {isCreatingJob ? 'Creating Job...' : 'Create Job'}
           </Button>
-          <div className="ds-schedule-action-help">
-            {!testCompleted && 'Please run a test before proceeding'}
-            {testCompleted && !isMainDateTimeValid && 'Please set valid start and end times'}
-            {canProceed && 'Ready to create your job'}
-          </div>
+
+          {/* Job Creation Status Messages */}
+          {jobCreationStatus === 'success' && (
+            <div className="ds-schedule-success-message">
+              ✅ {jobCreationMessage}
+            </div>
+          )}
+          {jobCreationStatus === 'error' && (
+            <div className="ds-schedule-error-message">
+              ❌ {jobCreationMessage}
+            </div>
+          )}
+
+          {jobCreationStatus === 'idle' && (
+            <div className="ds-schedule-action-help">
+              {!testCompleted && 'Please run a test before proceeding'}
+              {testCompleted && !isMainDateTimeValid && 'Please set valid start and end times'}
+              {canProceed && 'Ready to create your job'}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -7278,6 +7278,32 @@
   line-height: 1.4;
 }
 
+.ds-schedule-success-message {
+  font-size: 0.875rem;
+  color: var(--color-success);
+  margin-top: var(--ds-spacing-xs);
+  text-align: center;
+  line-height: 1.4;
+  padding: var(--ds-spacing-xs);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  max-width: 300px;
+}
+
+.ds-schedule-error-message {
+  font-size: 0.875rem;
+  color: var(--color-error);
+  margin-top: var(--ds-spacing-xs);
+  text-align: center;
+  line-height: 1.4;
+  padding: var(--ds-spacing-xs);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  max-width: 300px;
+}
+
 .ds-schedule-create-button {
   min-width: 140px;
 }
