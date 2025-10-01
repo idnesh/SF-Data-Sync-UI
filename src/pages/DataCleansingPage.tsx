@@ -56,6 +56,7 @@ const DataCleansingPage: React.FC = () => {
   const [objects, setObjects] = useState<string[]>([]);
   const [loadingObjects, setLoadingObjects] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [exportingReport, setExportingReport] = useState(false);
 
 
   // Available Salesforce Organizations
@@ -237,6 +238,45 @@ const DataCleansingPage: React.FC = () => {
   const handleObjectSelect = (objectName: string) => {
     setSelectedObject(objectName);
     setStage('processing');
+  };
+
+  const handleExportReport = async () => {
+    setExportingReport(true);
+    try {
+      const response = await fetch('https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/excel-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          objectType: selectedObject,
+          analysisResults: results,
+          organizationId: connection.organization,
+          environmentId: connection.environment
+        })
+      });
+
+      if (response.ok) {
+        // Handle file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${selectedObject}_DataQuality_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Export failed:', response.statusText);
+        alert('Export failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed. Please check your connection and try again.');
+    } finally {
+      setExportingReport(false);
+    }
   };
 
   const toggleCategoryExpansion = (categoryId: string) => {
@@ -434,8 +474,13 @@ const DataCleansingPage: React.FC = () => {
               <p className="dc-results-subtitle">Comprehensive analysis of {selectedObject} {results.totalRecords.toLocaleString()} records</p>
             </div>
             <div className="dc-header-actions">
-              <Button variant="outline" onClick={() => console.log('Export report')}>
-                📊 Export Report
+              <Button
+                variant="outline"
+                onClick={handleExportReport}
+                loading={exportingReport}
+                disabled={exportingReport}
+              >
+                📊 {exportingReport ? 'Exporting...' : 'Export Report'}
               </Button>
               <Button variant="outline" onClick={() => setStage('object-selection')}>
                 🔄 Analyze Another
