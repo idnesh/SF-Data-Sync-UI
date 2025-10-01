@@ -6,7 +6,7 @@ import { ViewJobsPage } from '../features/jobs/ViewJobsPage';
 type DataSyncView = 'dashboard' | 'create-job' | 'job-details';
 
 interface StatCardProps {
-  icon: string;
+  icon?: string;
   title: string;
   number: string;
   change: string;
@@ -20,11 +20,15 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, number, change, onClic
     onClick={onClick}
     style={{ cursor: clickable ? 'pointer' : 'default' }}
   >
-    <div className="ds-stat-icon">{icon}</div>
-    <div className="ds-stat-content">
-      <h3>{title}</h3>
-      <p className="ds-stat-number">{number}</p>
-      <span className="ds-stat-change">{change}</span>
+    <div className="ds-stat-header">
+      <div className="ds-stat-meta">
+        <span className="ds-stat-title">{title}</span>
+        {change && <span className="ds-stat-change">{change}</span>}
+      </div>
+      {icon && <div className="ds-stat-icon">{icon}</div>}
+    </div>
+    <div className="ds-stat-main">
+      <div className="ds-stat-number">{number}</div>
     </div>
   </div>
 );
@@ -35,34 +39,9 @@ const DataSyncDashboard: React.FC<{ onNavigate: (view: DataSyncView) => void }> 
       {/* Statistics Dashboard */}
       <div className="ds-stats-section">
         <div className="ds-stats-grid">
-          {/* Total Jobs - Navigates to Job Details view */}
-          <StatCard
-            icon="📊"
-            title="Total Jobs"
-            number="12"
-            change="+2 this week"
-            onClick={() => onNavigate('job-details')}
-            clickable={true}
-          />
-
-          {/* Active Jobs - Navigates to Job Details view */}
-          <StatCard
-            icon="✅"
-            title="Active Jobs"
-            number="8"
-            change=""
-            onClick={() => onNavigate('job-details')}
-            clickable={true}
-          />
-
-          {/* Inactive Jobs - Static */}
-          <StatCard
-            icon="⚠️"
-            title="Inactive Jobs"
-            number="4"
-            change=""
-            clickable={false}
-          />
+          <StatCard title="Total Jobs" number="12" change="+2 this week" onClick={() => onNavigate('job-details')} clickable={true} />
+          <StatCard title="Active Jobs" number="8" change="" onClick={() => onNavigate('job-details')} clickable={true} />
+          <StatCard title="Inactive Jobs" number="4" change="" clickable={false} />
         </div>
       </div>
       {/* Professional Introduction */}

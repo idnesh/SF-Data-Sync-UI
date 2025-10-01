@@ -5320,7 +5320,7 @@
 /* Service Introduction Section */
 .ds-service-introduction {
   text-align: center;
-  padding: var(--ds-spacing-md);
+  padding: var(--ds-spacing-lg);
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-accent) 100%);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--shadow-sm);
@@ -5347,7 +5347,7 @@
 }
 
 .ds-description-text {
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--text-secondary);
   max-width: 90%;
   margin: 0 auto;
@@ -5475,15 +5475,63 @@
 .ds-stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
-  border-radius: var(--ds-radius-md);
+  border-radius: var(--ds-radius-lg);
   padding: var(--ds-spacing-md);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--ds-spacing-sm);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  min-height: 120px;
+}
+
+.ds-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.ds-stat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.ds-stat-main {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+}
+
+.ds-stat-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+.ds-stat-number {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1;
+  font-feature-settings: 'tnum';
+}
+
+.ds-stat-change {
+  font-size: 0.75rem;
+  color: var(--text-success);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .ds-stat-card::before {
@@ -5518,38 +5566,19 @@
 }
 
 .ds-stat-icon {
-  font-size: 1.75rem;
-  width: 48px;
-  height: 48px;
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg-accent);
-  border-radius: var(--ds-radius-sm);
+  border-radius: var(--ds-radius-full);
   flex-shrink: 0;
+  color: var(--text-accent);
 }
 
-.ds-stat-content {
-  flex: 1;
-  min-width: 0;
-}
 
-.ds-stat-content h3 {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 0 0 var(--ds-spacing-xs) 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ds-stat-number {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 var(--ds-spacing-xs) 0;
-  line-height: 1.2;
-}
 
 .ds-stat-change {
   font-size: 0.75rem;
@@ -8416,7 +8445,7 @@
 
 .dc-summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--ds-spacing-md);
 }
 

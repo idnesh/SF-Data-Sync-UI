@@ -155,16 +155,22 @@ const DataCleansingPage: React.FC = () => {
           }
         ]
       },
-      'contact-relationship-issues': {
-        name: 'Contact Issues',
-        count: 1350,
+      'orphan-contacts': {
+        name: 'Orphan Contacts',
+        count: 680,
         issues: [
           {
             field: 'AccountId',
             description: 'Contacts not linked to the correct Account (orphan contacts)',
             suggestion: 'Review and update account relationships using contact matching rules',
             count: 680
-          },
+          }
+        ]
+      },
+      'other-contact-issues': {
+        name: 'Other Contact Issues',
+        count: 670,
+        issues: [
           {
             field: 'Title',
             description: 'Generic job titles (e.g., "Manager") that prevent role-based routing',
@@ -495,7 +501,7 @@ const DataCleansingPage: React.FC = () => {
           <div className="dc-header-content">
             <div className="dc-header-text">
               <h2 className="dc-results-title">{selectedObject} - AI Analysis Summary</h2>
-              <p className="dc-results-subtitle">Comprehensive analysis of {selectedObject} {results.totalRecords.toLocaleString()} records</p>
+              <p className="dc-results-subtitle">Comprehensive analysis of {results.totalRecords.toLocaleString()} {selectedObject}s</p>
             </div>
             <div className="dc-header-actions">
               <Button
@@ -555,7 +561,8 @@ const DataCleansingPage: React.FC = () => {
                   {categoryId === 'missing-data' ? '🔍' :
                     categoryId === 'inconsistent-formatting' ? '📝' :
                     categoryId === 'duplicate-records' ? '👥' :
-                    categoryId === 'contact-relationship-issues' ? '🔗' : '📊'}
+                    categoryId === 'orphan-contacts' ? '🔗' :
+                    categoryId === 'other-contact-issues' ? '👤' : '📊'}
                 </div>
                 <div className="dc-summary-content">
                   <div className="dc-summary-count">{category.count}</div>
