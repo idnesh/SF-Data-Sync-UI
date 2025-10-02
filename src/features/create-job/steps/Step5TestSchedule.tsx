@@ -1,4 +1,4 @@
-// Step 5: Test & Schedule Component
+// Step 5: Simulate Component
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../../components/common/Button';
 import { JobData, ScheduleOption } from '../types';
@@ -327,7 +327,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   return (
     <div className="ds-schedule-container" role="main" aria-labelledby="step5-heading">
       <div className="ds-schedule-header">
-        <h4 id="step5-heading" className="ds-schedule-title">Test & Schedule</h4>
+        <h4 id="step5-heading" className="ds-schedule-title">Simulate</h4>
         <p className="ds-schedule-description">
           Test your job configuration and set up the synchronization schedule
         </p>

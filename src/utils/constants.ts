@@ -58,7 +58,7 @@ export const WIZARD_STEPS = [
   { id: 3, label: 'Objects', icon: 'database', route: '/jobs/create/objects' },
   { id: 4, label: 'Field Mapping', icon: 'mapping', route: '/jobs/create/mapping' },
   { id: 5, label: 'Validation', icon: 'check', route: '/jobs/create/validation' },
-  { id: 6, label: 'Test & Schedule', icon: 'calendar', route: '/jobs/create/schedule' }
+  { id: 6, label: 'Simulate', icon: 'calendar', route: '/jobs/create/schedule' }
 ];
 
 // Validation statuses

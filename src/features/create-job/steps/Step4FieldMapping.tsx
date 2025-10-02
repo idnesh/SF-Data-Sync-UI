@@ -5,7 +5,6 @@ import { FieldMapping } from '../types';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Step4FieldMappingProps {
   fieldMappings: FieldMapping;
@@ -23,6 +22,10 @@ interface MappingRow {
   targetField: string;
   isEditing: boolean;
   confidenceScore: number; // AI confidence score (0-100)
+  isPrimaryKey: boolean; // Indicates if this field is part of primary key combination
+  includeInSync: boolean; // Indicates if this field should be included in sync
+  isPII: boolean; // Indicates if this field contains Personally Identifiable Information
+  maskPII: boolean; // Indicates if PII data should be masked during sync
 }
 
 // Available Salesforce fields for mapping (Account target object)
@@ -50,22 +53,22 @@ const SALESFORCE_FIELDS = [
 
 // Default field mappings for Contact source to Contact__c target
 const DEFAULT_MAPPINGS: MappingRow[] = [
-  { sourceField: 'AccountId', sourceLabel: 'AccountId', targetField: 'Account.extid__c', isEditing: false, confidenceScore: 95 },
-  { sourceField: 'FirstName', sourceLabel: 'FirstName', targetField: 'FirstName', isEditing: false, confidenceScore: 99 },
-  { sourceField: 'LastName', sourceLabel: 'LastName', targetField: 'LastName', isEditing: false, confidenceScore: 99 },
-  { sourceField: 'Phone', sourceLabel: 'Phone', targetField: 'phone', isEditing: false, confidenceScore: 90 },
-  { sourceField: 'Department', sourceLabel: 'Department', targetField: 'Department', isEditing: false, confidenceScore: 88 },
-  { sourceField: 'Description', sourceLabel: 'Description', targetField: 'Description', isEditing: false, confidenceScore: 85 },
-  { sourceField: 'Email', sourceLabel: 'Email', targetField: 'Email', isEditing: false, confidenceScore: 95 },
-  { sourceField: 'Fax', sourceLabel: 'Fax', targetField: 'Fax', isEditing: false, confidenceScore: 80 },
-  { sourceField: 'Title', sourceLabel: 'Title', targetField: 'Title', isEditing: false, confidenceScore: 90 },
-  { sourceField: 'preferred_language__c', sourceLabel: 'preferred_language__c', targetField: 'language_preferred__c', isEditing: false, confidenceScore: 85 },
-  { sourceField: 'MailingStreet', sourceLabel: 'MailingStreet', targetField: 'MailingStreet', isEditing: false, confidenceScore: 92 },
-  { sourceField: 'MailingCity', sourceLabel: 'MailingCity', targetField: 'MailingCity', isEditing: false, confidenceScore: 92 },
-  { sourceField: 'MailingState', sourceLabel: 'MailingState', targetField: 'MailingState', isEditing: false, confidenceScore: 92 },
-  { sourceField: 'MailingPostalCode', sourceLabel: 'MailingPostalCode', targetField: 'MailingPostalCode', isEditing: false, confidenceScore: 92 },
-  { sourceField: 'MailingCountry', sourceLabel: 'MailingCountry', targetField: 'MailingCountry', isEditing: false, confidenceScore: 92 },
-  { sourceField: 'Id', sourceLabel: 'Id', targetField: 'extid__c', isEditing: false, confidenceScore: 99 }
+  { sourceField: 'Id', sourceLabel: 'Id', targetField: 'extid__c', isEditing: false, confidenceScore: 99, isPrimaryKey: true, includeInSync: true, isPII: false, maskPII: false },
+  { sourceField: 'AccountId', sourceLabel: 'AccountId', targetField: 'Account.extid__c', isEditing: false, confidenceScore: 95, isPrimaryKey: false, includeInSync: true, isPII: false, maskPII: false },
+  { sourceField: 'FirstName', sourceLabel: 'FirstName', targetField: 'FirstName', isEditing: false, confidenceScore: 99, isPrimaryKey: true, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'LastName', sourceLabel: 'LastName', targetField: 'LastName', isEditing: false, confidenceScore: 99, isPrimaryKey: true, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'Phone', sourceLabel: 'Phone', targetField: 'phone', isEditing: false, confidenceScore: 90, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'Department', sourceLabel: 'Department', targetField: 'Department', isEditing: false, confidenceScore: 88, isPrimaryKey: false, includeInSync: false, isPII: false, maskPII: false },
+  { sourceField: 'Description', sourceLabel: 'Description', targetField: 'Description', isEditing: false, confidenceScore: 85, isPrimaryKey: false, includeInSync: false, isPII: false, maskPII: false },
+  { sourceField: 'Email', sourceLabel: 'Email', targetField: 'Email', isEditing: false, confidenceScore: 95, isPrimaryKey: true, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'Fax', sourceLabel: 'Fax', targetField: 'Fax', isEditing: false, confidenceScore: 80, isPrimaryKey: false, includeInSync: false, isPII: true, maskPII: true },
+  { sourceField: 'Title', sourceLabel: 'Title', targetField: 'Title', isEditing: false, confidenceScore: 90, isPrimaryKey: false, includeInSync: true, isPII: false, maskPII: false },
+  { sourceField: 'preferred_language__c', sourceLabel: 'preferred_language__c', targetField: 'language_preferred__c', isEditing: false, confidenceScore: 85, isPrimaryKey: false, includeInSync: false, isPII: false, maskPII: false },
+  { sourceField: 'MailingStreet', sourceLabel: 'MailingStreet', targetField: 'MailingStreet', isEditing: false, confidenceScore: 92, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'MailingCity', sourceLabel: 'MailingCity', targetField: 'MailingCity', isEditing: false, confidenceScore: 92, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'MailingState', sourceLabel: 'MailingState', targetField: 'MailingState', isEditing: false, confidenceScore: 92, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'MailingPostalCode', sourceLabel: 'MailingPostalCode', targetField: 'MailingPostalCode', isEditing: false, confidenceScore: 92, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true },
+  { sourceField: 'MailingCountry', sourceLabel: 'MailingCountry', targetField: 'MailingCountry', isEditing: false, confidenceScore: 92, isPrimaryKey: false, includeInSync: true, isPII: true, maskPII: true }
 ];
 
 // Helper functions for confidence scoring
@@ -230,8 +233,35 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     setTempTargetField('');
   }, []);
 
-  const handleDelete = useCallback((sourceField: string) => {
-    setMappingRows(prev => prev.filter(row => row.sourceField !== sourceField));
+
+  const handlePrimaryKeyToggle = useCallback((sourceField: string) => {
+    setMappingRows(prev =>
+      prev.map(row =>
+        row.sourceField === sourceField
+          ? { ...row, isPrimaryKey: !row.isPrimaryKey }
+          : row
+      )
+    );
+  }, []);
+
+  const handleSyncInclusionToggle = useCallback((sourceField: string) => {
+    setMappingRows(prev =>
+      prev.map(row =>
+        row.sourceField === sourceField
+          ? { ...row, includeInSync: !row.includeInSync }
+          : row
+      )
+    );
+  }, []);
+
+  const handlePIIMaskingToggle = useCallback((sourceField: string) => {
+    setMappingRows(prev =>
+      prev.map(row =>
+        row.sourceField === sourceField
+          ? { ...row, maskPII: !row.maskPII }
+          : row
+      )
+    );
   }, []);
 
   const handleAddNewMapping = useCallback(() => {
@@ -240,7 +270,11 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
       sourceLabel: `NewField_${Date.now()}`,
       targetField: '',
       isEditing: true,
-      confidenceScore: 50 // Default confidence for new mappings
+      confidenceScore: 50, // Default confidence for new mappings
+      isPrimaryKey: false,
+      includeInSync: false,
+      isPII: false,
+      maskPII: false
     };
     setMappingRows(prev => [...prev, newRow]);
     setEditingField(newRow.sourceField);
@@ -324,10 +358,12 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
 
       <div className="field-mapping-table">
         <div className="table-header">
+          <div className="column-header">Include in Sync</div>
+          <div className="column-header">Primary Key</div>
+          <div className="column-header">Mask PII</div>
           <div className="column-header">Source Field (Account)</div>
           <div className="column-header">Target Field (Account__c)</div>
           <div className="column-header">AI Confidence</div>
-          <div className="column-header">Actions</div>
         </div>
 
         {mappingRows.map((row) => {
@@ -340,9 +376,40 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
               key={row.sourceField}
               className={`mapping-row ${row.isEditing ? 'editing' : ''} ${isDuplicate ? 'duplicate' : ''} ${isInvalidSource ? 'invalid-source' : ''} ${isEmptySource ? 'empty-source' : ''}`}
             >
+              <div className="sync-inclusion-cell">
+                <input
+                  type="checkbox"
+                  checked={row.includeInSync}
+                  onChange={() => handleSyncInclusionToggle(row.sourceField)}
+                  className="sync-inclusion-checkbox"
+                  aria-label={`Include ${row.sourceLabel} in sync`}
+                />
+              </div>
+              <div className="primary-key-cell">
+                <input
+                  type="checkbox"
+                  checked={row.isPrimaryKey}
+                  onChange={() => handlePrimaryKeyToggle(row.sourceField)}
+                  className="primary-key-checkbox"
+                  aria-label={`Mark ${row.sourceLabel} as primary key`}
+                />
+              </div>
+              <div className="pii-masking-cell">
+                <input
+                  type="checkbox"
+                  checked={row.maskPII}
+                  onChange={() => handlePIIMaskingToggle(row.sourceField)}
+                  className="pii-masking-checkbox"
+                  disabled={!row.isPII}
+                  aria-label={`Mask PII data for ${row.sourceLabel}`}
+                />
+              </div>
               <div className="source-field">
                 <div className={`field-label ${isInvalidSource || isEmptySource ? 'error' : ''}`}>
-                  {row.sourceLabel}
+                  <span className="field-name">
+                    {row.sourceLabel}
+                    {row.isPII && <span className="pii-indicator" title="Contains Personally Identifiable Information">🔒</span>}
+                  </span>
                   {isInvalidSource && <span className="error-indicator"> (Invalid)</span>}
                   {isEmptySource && <span className="error-indicator"> (Empty)</span>}
                 </div>
@@ -351,37 +418,72 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
               <div className="target-field">
                 {row.isEditing ? (
                   <div className="edit-container">
-                    <select
-                      value={tempTargetField}
-                      onChange={(e) => setTempTargetField(e.target.value)}
-                      className={`field-select ${isDuplicate ? 'error' : ''}`}
-                      autoFocus
-                    >
-                      {SALESFORCE_FIELDS.map((field) => (
-                        <option key={field.value} value={field.value}>
-                          {field.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="target-field-with-actions">
+                      <select
+                        value={tempTargetField}
+                        onChange={(e) => setTempTargetField(e.target.value)}
+                        className={`field-select ${isDuplicate ? 'error' : ''}`}
+                        autoFocus
+                      >
+                        {SALESFORCE_FIELDS.map((field) => (
+                          <option key={field.value} value={field.value}>
+                            {field.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="inline-actions">
+                        <span
+                          className={`action-icon save-icon ${isDuplicate ? 'disabled' : ''}`}
+                          onClick={isDuplicate ? undefined : () => handleEditSave(row.sourceField)}
+                          aria-label="Save mapping"
+                          role="button"
+                          tabIndex={isDuplicate ? -1 : 0}
+                        >
+                          <CheckIcon fontSize="small" />
+                        </span>
+                        <span
+                          className="action-icon cancel-icon"
+                          onClick={() => handleEditCancel(row.sourceField)}
+                          aria-label="Cancel edit"
+                          role="button"
+                          tabIndex={0}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </span>
+                      </div>
+                    </div>
                     {isDuplicate && (
                       <div className="error-message">This field is already mapped</div>
                     )}
                   </div>
                 ) : (
-                  <div
-                    className={`field-display ${!row.targetField ? 'unmapped' : ''} ${isDuplicate ? 'duplicate' : ''}`}
-                    onClick={() => handleEditStart(row.sourceField, row.targetField)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleEditStart(row.sourceField, row.targetField);
-                      }
-                    }}
-                  >
-                    {row.targetField || 'Click to map'}
-                    {isDuplicate && <span className="duplicate-indicator"> (Duplicate)</span>}
+                  <div className="target-field-with-actions">
+                    <div
+                      className={`field-display ${!row.targetField ? 'unmapped' : ''} ${isDuplicate ? 'duplicate' : ''}`}
+                      onClick={() => handleEditStart(row.sourceField, row.targetField)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleEditStart(row.sourceField, row.targetField);
+                        }
+                      }}
+                    >
+                      {row.targetField || 'Click to map'}
+                      {isDuplicate && <span className="duplicate-indicator"> (Duplicate)</span>}
+                    </div>
+                    <div className="inline-actions">
+                      <span
+                        className="action-icon edit-icon"
+                        onClick={() => handleEditStart(row.sourceField, row.targetField)}
+                        aria-label="Edit mapping"
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <EditIcon fontSize="small" />
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -390,52 +492,6 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
                 <div className={`confidence-badge confidence-${getConfidenceLevel(row.confidenceScore)}`}>
                   <span className="confidence-value">{row.confidenceScore}%</span>
                 </div>
-              </div>
-
-              <div className="actions">
-                {row.isEditing ? (
-                  <div className="edit-actions">
-                    <span
-                      className={`action-icon save-icon ${isDuplicate ? 'disabled' : ''}`}
-                      onClick={isDuplicate ? undefined : () => handleEditSave(row.sourceField)}
-                      aria-label="Save mapping"
-                      role="button"
-                      tabIndex={isDuplicate ? -1 : 0}
-                    >
-                      <CheckIcon fontSize="small" />
-                    </span>
-                    <span
-                      className="action-icon cancel-icon"
-                      onClick={() => handleEditCancel(row.sourceField)}
-                      aria-label="Cancel edit"
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </span>
-                  </div>
-                ) : (
-                  <div className="row-actions edit-actions">
-                    <span
-                      className="action-icon edit-icon"
-                      onClick={() => handleEditStart(row.sourceField, row.targetField)}
-                      aria-label="Edit mapping"
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <EditIcon fontSize="small" />
-                    </span>
-                    <span
-                      className="action-icon delete-icon"
-                      onClick={() => handleDelete(row.sourceField)}
-                      aria-label="Delete mapping"
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           );
@@ -483,7 +539,7 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           disabled={!canProceed || isLoading}
           loading={isLoading}
         >
-          Continue to Test & Schedule
+          Continue to Simulate
         </Button>
       </div>
     </div>

@@ -3292,7 +3292,7 @@
   justify-content: center;
 }
 
-/* Step 6: Test & Schedule Styles */
+/* Step 6: Simulate Styles */
 .test-schedule-container {
   display: flex;
   flex-direction: column;
@@ -3671,7 +3671,7 @@
 
 .field-mapping-table .table-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 120px 140px;
+  grid-template-columns: 120px 100px 80px 1fr 1fr 120px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-primary);
 }
@@ -3692,7 +3692,7 @@
 
 .mapping-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 120px 140px;
+  grid-template-columns: 120px 100px 80px 1fr 1fr 120px;
   border-bottom: 1px solid var(--border-primary);
   transition: background-color 0.2s ease;
 }
@@ -3714,10 +3714,82 @@
   background: rgba(0, 113, 227, 0.05);
 }
 
+.primary-key-cell {
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border-secondary);
+}
+
+.sync-inclusion-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border-secondary);
+}
+.sync-inclusion-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.primary-key-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.pii-masking-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border-secondary);
+}
+.pii-masking-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.pii-masking-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.field-name {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pii-indicator {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-left: 0.25rem;
+}
+
+.target-field-with-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.mapping-row:hover .inline-actions {
+  opacity: 1;
+}
+
 .source-field,
 .target-field,
-.confidence-score,
-.actions {
+.confidence-score {
   padding: 0.375rem 0.5rem;
   border-right: 1px solid var(--border-primary);
   display: flex;
@@ -3726,7 +3798,7 @@
 
 .source-field:last-child,
 .target-field:last-child,
-.actions:last-child {
+.confidence-score:last-child {
   border-right: none;
 }
 
@@ -3959,14 +4031,13 @@
   .field-mapping-table .column-header,
   .source-field,
   .target-field,
-  .confidence-score,
-  .actions {
+  .confidence-score {
     border-right: none;
     border-bottom: 1px solid var(--border-primary);
   }
 
   .field-mapping-table .column-header:last-child,
-  .actions:last-child {
+  .confidence-score:last-child {
     border-bottom: none;
   }
 
@@ -4254,7 +4325,7 @@
   transition: color 0.3s ease;
 }
 
-/* Test & Schedule Step Styles */
+/* Simulate Step Styles */
 .test-schedule-container {
   display: flex;
   flex-direction: column;
@@ -6946,7 +7017,7 @@
   }
 }
 
-/* Step 5 Test & Schedule - Compact Design */
+/* Step 5 Simulate - Compact Design */
 
 /* Container */
 .ds-schedule-container {
