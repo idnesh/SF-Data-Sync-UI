@@ -29,22 +29,22 @@ export const HomePage: React.FC = () => {
           <div className="action-buttons">
             <button
               className="action-btn primary-action"
-              onClick={handleDataSync}
-              aria-label="Access Data Sync functionality"
-            >
-              <span className="btn-icon">🔄</span>
-              <span className="btn-text">Data Sync</span>
-              <span className="btn-description">Synchronize and manage your data</span>
-            </button>
-
-            <button
-              className="action-btn secondary-action"
               onClick={handleDataQuality}
               aria-label="Access Data Quality tools"
             >
               <span className="btn-icon">📊</span>
               <span className="btn-text">Data Quality</span>
               <span className="btn-description">Assess and improve data quality</span>
+            </button>
+
+            <button
+              className="action-btn secondary-action"
+              onClick={handleDataSync}
+              aria-label="Access Data Sync functionality"
+            >
+              <span className="btn-icon">🔄</span>
+              <span className="btn-text">Data Sync</span>
+              <span className="btn-description">Synchronize and manage your data</span>
             </button>
           </div>
         </div>

@@ -7129,6 +7129,7 @@
 .ds-schedule-sample-select,
 .ds-schedule-frequency-select {
   height: 36px;
+  max-width: 300px;
   padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
   border: 1px solid var(--border-primary);
   border-radius: var(--ds-radius-sm);

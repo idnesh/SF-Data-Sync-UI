@@ -51,7 +51,7 @@ describe('useJobWizard', () => {
       const savedState = JSON.stringify({
         currentStep: 3,
         jobData: {
-          name: 'Test Job',
+          name: 'Simulate',
           description: 'Test Description'
         }
       });
@@ -60,7 +60,7 @@ describe('useJobWizard', () => {
       const { result } = renderHook(() => useJobWizard());
 
       expect(result.current.currentStep).toBe(3);
-      expect(result.current.jobData.name).toBe('Test Job');
+      expect(result.current.jobData.name).toBe('Simulate');
       expect(result.current.jobData.description).toBe('Test Description');
       expect(result.current.isDirty).toBe(true);
     });
@@ -115,10 +115,10 @@ describe('useJobWizard', () => {
       const { result } = renderHook(() => useJobWizard());
 
       act(() => {
-        result.current.updateJobDetails('My Test Job', 'Job description');
+        result.current.updateJobDetails('My Simulate', 'Job description');
       });
 
-      expect(result.current.jobData.name).toBe('My Test Job');
+      expect(result.current.jobData.name).toBe('My Simulate');
       expect(result.current.jobData.description).toBe('Job description');
       expect(result.current.isDirty).toBe(true);
     });
@@ -195,13 +195,13 @@ describe('useJobWizard', () => {
       const { result } = renderHook(() => useJobWizard());
 
       act(() => {
-        result.current.updateJobDetails('Test Job');
+        result.current.updateJobDetails('Simulate');
         result.current.saveAsDraft();
       });
 
       expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
         'job-wizard-draft',
-        expect.stringContaining('Test Job')
+        expect.stringContaining('Simulate')
       );
     });
 

@@ -115,7 +115,7 @@ export const Step1WithData: StoryObj<typeof Step1Details> = {
 export const Step1Loading: StoryObj<typeof Step1Details> = {
   ...step1Meta,
   args: {
-    jobName: 'Test Job',
+    jobName: 'Simulate',
     jobDescription: '',
     onUpdate: step1Meta.args!.onUpdate,
     onNext: step1Meta.args!.onNext,

@@ -99,7 +99,7 @@ export interface JobData {
   sourceConnection: ConnectionData;
   targetConnection: ConnectionData;
 
-  // Test Job Schedule
+  // Simulate Schedule
   testStartDate?: string;
   testStartTime?: string;
   testEndDate?: string;

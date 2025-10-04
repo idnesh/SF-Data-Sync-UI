@@ -1,0 +1,8 @@
+# Handle trailing slash redirects for SPA routes
+/create-job/ /create-job 301
+/data-cleansing/ /data-cleansing 301
+/dashboard/ /dashboard 301
+/home/ /home 301
+
+# SPA fallback - this should be the last rule
+/* /index.html 200

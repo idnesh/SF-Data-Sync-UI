@@ -118,7 +118,12 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ className = '' }) 
 
   // Get current tab index based on location
   const getCurrentTabIndex = (): number => {
-    const currentTab = tabs.findIndex(tab => tab.route === location.pathname);
+    // Normalize paths by removing trailing slashes for comparison
+    const normalizedCurrentPath = location.pathname.replace(/\/$/, '') || '/';
+    const currentTab = tabs.findIndex(tab => {
+      const normalizedTabRoute = tab.route.replace(/\/$/, '') || '/';
+      return normalizedTabRoute === normalizedCurrentPath;
+    });
     return currentTab !== -1 ? currentTab : 0;
   };
 

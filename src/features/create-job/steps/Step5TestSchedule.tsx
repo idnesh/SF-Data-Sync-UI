@@ -39,7 +39,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   isLoading,
   error
 }) => {
-  // Test Job Schedule State
+  // Simulate Schedule State
   const [testStartDate, setTestStartDate] = useState<string>(jobData.testStartDate || '');
   const [testStartTime, setTestStartTime] = useState<string>(jobData.testStartTime || '');
   const [testEndDate, setTestEndDate] = useState<string>(jobData.testEndDate || '');
@@ -81,7 +81,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   const timeOptions = generateTimeOptions();
 
-  // Set default dates and times for test job
+  // Set default dates and times for Simulate
   useEffect(() => {
     if (!testStartDate) {
       const now = new Date();
@@ -309,7 +309,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   const { minDate } = getMinDateTime();
 
-  // Validation functions for test job
+  // Validation functions for Simulate
   const isTestStartDateTimeValid = testStartDate && testStartTime && new Date(`${testStartDate}T${testStartTime}`) > new Date();
   const isTestEndDateTimeValid = testEndDate && testEndTime && testStartDate && testStartTime &&
     new Date(`${testEndDate}T${testEndTime}`) > new Date(`${testStartDate}T${testStartTime}`);
@@ -326,12 +326,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   return (
     <div className="ds-schedule-container" role="main" aria-labelledby="step5-heading">
-      <div className="ds-schedule-header">
-        <h4 id="step5-heading" className="ds-schedule-title">Simulate</h4>
-        <p className="ds-schedule-description">
-          Test your job configuration and set up the synchronization schedule
-        </p>
-      </div>
+
 
       {error && (
         <div className="ds-schedule-error-banner" role="alert">
@@ -346,9 +341,9 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
             <div className="ds-schedule-section-header">
               <div className="ds-schedule-section-icon">🧪</div>
               <div className="ds-schedule-section-info">
-                <h3 className="ds-schedule-section-title">Test Job</h3>
+                <h3 className="ds-schedule-section-title">Simulate</h3>
                 <p className="ds-schedule-section-subtitle">
-                  Run a test to validate the sync before scheduling
+                  Simulate sample records to verify data sync
                 </p>
               </div>
             </div>
@@ -447,7 +442,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 loading={isTestRunning}
                 className="ds-schedule-test-button"
               >
-                {isTestRunning ? 'Testing...' : 'Run Test'}
+                {isTestRunning ? 'Testing...' : 'Run Simulation'}
               </Button>
             </div>
 
