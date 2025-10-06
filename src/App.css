@@ -138,31 +138,6 @@
   gap: 0.75rem;
 }
 
-.header-buttons .user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #007bff 0%, #4dabf7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.header-buttons .user-avatar:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.header-buttons .avatar-initials {
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .header-buttons .user-greeting {
   font-size: 0.9rem;
   font-weight: 500;

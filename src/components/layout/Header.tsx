@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../common/Button';
 import { ThemeToggle } from '../common/ThemeToggle';
 import { FEATURE_FLAGS } from '../../utils/constants';
+import { Avatar } from '@mui/material';
+import { Person } from '@mui/icons-material';
 
 interface HeaderProps {
   title?: string;
@@ -48,10 +50,17 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
       <div className="header-buttons">
         <div className="user-info">
-          <div className="user-avatar">
-            <span className="avatar-initials">TU</span>
-          </div>
-          {/* <span className="user-greeting">Hi Test User</span> */}
+          <Avatar
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: '#007bff',
+              color: 'white',
+              fontSize: '1rem'
+            }}
+          >
+            <Person />
+          </Avatar>
         </div>
         <ThemeToggle />
         {/* Settings and Logout buttons - only show when feature flag is enabled */}
