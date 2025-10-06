@@ -6,10 +6,26 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 
+// API Response interfaces
+interface APIFieldMapping {
+  sourceField: string;
+  sourceLabel: string;
+  targetField: string;
+  score: number;
+}
+
+interface APIResponse {
+  fieldMappings: APIFieldMapping[];
+}
+
 interface Step4FieldMappingProps {
   fieldMappings: FieldMapping;
   selectedFields: string[];
   syncAllFields: boolean;
+  jobData?: {
+    sourceObject?: string;
+    targetObject?: string;
+  };
   onUpdateMappings: (mappings: FieldMapping, transformations: Record<string, any>, selectedFields: string[], syncAllFields: boolean) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -78,10 +94,69 @@ const getConfidenceLevel = (score: number): string => {
   return 'low';
 };
 
+// Helper function to detect PII fields
+const isPIIField = (fieldName: string): boolean => {
+  const piiPatterns = [
+    /firstname/i, /lastname/i, /email/i, /phone/i, /fax/i,
+    /street/i, /address/i, /city/i, /state/i, /postal/i, /zip/i, /country/i,
+    /ssn/i, /social/i, /birthdate/i, /birth/i, /age/i
+  ];
+  return piiPatterns.some(pattern => pattern.test(fieldName));
+};
+
+// Helper function to detect primary key fields
+const isPrimaryKeyField = (fieldName: string): boolean => {
+  const primaryKeyPatterns = [
+    /^id$/i, /firstname/i, /lastname/i, /email/i, /accountid/i
+  ];
+  return primaryKeyPatterns.some(pattern => pattern.test(fieldName));
+};
+
+// Helper function to determine if field should be included in sync by default
+const shouldIncludeInSync = (fieldName: string): boolean => {
+  const includePatterns = [
+    /^id$/i, /firstname/i, /lastname/i, /email/i, /phone/i, /title/i,
+    /street/i, /city/i, /state/i, /postal/i, /country/i, /accountid/i
+  ];
+  return includePatterns.some(pattern => pattern.test(fieldName));
+};
+
+// API function to fetch field mappings
+const fetchFieldMappings = async (objectName: string): Promise<APIFieldMapping[]> => {
+  try {
+    const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/getFieldMapping?object=${objectName}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: APIResponse = await response.json();
+    return data.fieldMappings;
+  } catch (error) {
+    console.error('Error fetching field mappings:', error);
+    // Return empty array on error, will fall back to default mappings
+    return [];
+  }
+};
+
+// Transform API response to MappingRow format
+const transformAPIResponseToMappingRows = (apiMappings: APIFieldMapping[]): MappingRow[] => {
+  return apiMappings.map(mapping => ({
+    sourceField: mapping.sourceField,
+    sourceLabel: mapping.sourceLabel,
+    targetField: mapping.targetField,
+    isEditing: false,
+    confidenceScore: mapping.score,
+    isPrimaryKey: isPrimaryKeyField(mapping.sourceField),
+    includeInSync: shouldIncludeInSync(mapping.sourceField),
+    isPII: isPIIField(mapping.sourceField),
+    maskPII: isPIIField(mapping.sourceField) // Default to mask if PII
+  }));
+};
+
 export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   fieldMappings,
   selectedFields,
   syncAllFields,
+  jobData,
   onUpdateMappings,
   onNext,
   onPrevious,
@@ -102,20 +177,38 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempTargetField, setTempTargetField] = useState<string>('');
 
-  // Loader effect with progress animation - 3 seconds total
+  // API call and loader effect with progress animation - 3 seconds total
   useEffect(() => {
     if (!showLoader) return;
 
     const steps = [
       'Initializing field analysis...',
+      'Fetching field mappings from API...',
       'Analyzing source data structure...',
-      'Mapping field relationships...',
       'Optimizing data transformations...',
       'Finalizing field mappings...'
     ];
 
     let currentStep = 0;
     let currentProgress = 0;
+
+    // Start API call immediately using dynamic source object
+    const sourceObject = jobData?.sourceObject || 'Contact';
+    fetchFieldMappings(sourceObject).then(apiMappings => {
+      if (apiMappings.length > 0) {
+        const transformedMappings = transformAPIResponseToMappingRows(apiMappings);
+        setMappingRows(prev => {
+          // Update with API data while preserving any existing customizations
+          return transformedMappings.map(apiRow => {
+            const existingRow = prev.find(row => row.sourceField === apiRow.sourceField);
+            return existingRow ? { ...apiRow, ...existingRow } : apiRow;
+          });
+        });
+      }
+    }).catch(error => {
+      console.error('Failed to fetch field mappings:', error);
+      // Continue with default mappings on error
+    });
 
     const interval = setInterval(() => {
       currentProgress += 3.33; // 3.33% every 100ms = 3 seconds total
@@ -264,22 +357,6 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, []);
 
-  const handleAddNewMapping = useCallback(() => {
-    const newRow: MappingRow = {
-      sourceField: `NewField_${Date.now()}`,
-      sourceLabel: `NewField_${Date.now()}`,
-      targetField: '',
-      isEditing: true,
-      confidenceScore: 50, // Default confidence for new mappings
-      isPrimaryKey: false,
-      includeInSync: false,
-      isPII: false,
-      maskPII: false
-    };
-    setMappingRows(prev => [...prev, newRow]);
-    setEditingField(newRow.sourceField);
-    setTempTargetField('');
-  }, []);
 
 
   const handleSaveMappings = useCallback(() => {
@@ -346,13 +423,13 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
         <h4 className="step-title">Field Mapping</h4>
         <p className="step-description">
           This is AI-driven field mapping. It automatically maps fields based on names and provide autosuggestions.
-          Configure how Account (source) fields map to Account__c (target) Salesforce fields.
+          Configure how {jobData?.sourceObject || 'Contact'} (source) fields map to {jobData?.targetObject || 'Contact__c'} (target) Salesforce fields.
           Some default mappings are pre-configured to get you started.
         </p>
         <div className="mapping-info">
-          <span className="source-info">📊 Source: <strong>Account</strong></span>
+          <span className="source-info">📊 Source: <strong>{jobData?.sourceObject || 'Contact'}</strong></span>
           <span className="arrow">→</span>
-          <span className="target-info">🎯 Target: <strong>Account__c</strong></span>
+          <span className="target-info">🎯 Target: <strong>{jobData?.targetObject || 'Contact__c'}</strong></span>
         </div>
       </div>
 
@@ -361,8 +438,8 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           <div className="column-header">Include in Sync</div>
           <div className="column-header">Primary Key</div>
           <div className="column-header">Mask PII</div>
-          <div className="column-header">Source Field (Account)</div>
-          <div className="column-header">Target Field (Account__c)</div>
+          <div className="column-header">Source Field ({jobData?.sourceObject || 'Contact'})</div>
+          <div className="column-header">Target Field ({jobData?.targetObject || 'Contact__c'})</div>
           <div className="column-header">AI Confidence</div>
         </div>
 

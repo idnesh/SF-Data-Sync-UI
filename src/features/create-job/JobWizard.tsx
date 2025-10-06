@@ -109,6 +109,7 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onExit }) => {
             fieldMappings={jobData.fieldMappings}
             selectedFields={jobData.selectedFields}
             syncAllFields={jobData.syncAllFields}
+            jobData={jobData}
             onUpdateMappings={updateFieldMappings}
             onNext={nextStep}
             onPrevious={previousStep}
