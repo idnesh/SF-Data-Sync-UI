@@ -2817,6 +2817,7 @@
   border: 1px solid var(--border-primary);
   border-radius: 12px;
   width: 80%;
+  max-width: 800px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;

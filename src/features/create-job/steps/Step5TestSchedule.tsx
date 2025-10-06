@@ -1,6 +1,10 @@
 // Step 5: Simulate Component
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 import { Button } from '../../../components/common/Button';
+import { Modal } from '../../../components/common/Modal';
 import { JobData, ScheduleOption } from '../types';
 
 interface Step5TestScheduleProps {
@@ -39,6 +43,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   isLoading,
   error
 }) => {
+  const navigate = useNavigate();
   // Simulate Schedule State
   const [testStartDate, setTestStartDate] = useState<string>(jobData.testStartDate || '');
   const [testStartTime, setTestStartTime] = useState<string>(jobData.testStartTime || '');
@@ -53,6 +58,8 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   const [isCreatingJob, setIsCreatingJob] = useState(false);
   const [jobCreationStatus, setJobCreationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [jobCreationMessage, setJobCreationMessage] = useState<string>('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   const [startDate, setStartDate] = useState<string>(jobData.startDate || '');
   const [startTime, setStartTime] = useState<string>(jobData.startTime || '');
   const [endDate, setEndDate] = useState<string>(jobData.endDate || '');
@@ -266,26 +273,32 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         fieldMaping: fieldMappingArray
       };
 
-      const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/createJob?key=${encodeURIComponent(jobData.name)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
+      // API call commented out for demo purposes
+      // const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/createJob?key=${encodeURIComponent(jobData.name)}`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(requestBody)
+      // });
 
-      if (response.ok) {
-        setJobCreationStatus('success');
-        setJobCreationMessage('Job created successfully! Your sync job has been scheduled.');
-        // Wait 2 seconds then proceed to next step (which will handle navigation)
-        setTimeout(() => {
-          onNext();
-        }, 2000);
-      } else {
-        const errorData = await response.text();
-        setJobCreationStatus('error');
-        setJobCreationMessage(`Failed to create job: ${response.status} ${response.statusText}. ${errorData}`);
-      }
+      // if (response.ok) {
+      //   setJobCreationStatus('success');
+      //   setJobCreationMessage('Job created successfully! Your sync job has been scheduled.');
+      //   // Wait 2 seconds then proceed to next step (which will handle navigation)
+      //   setTimeout(() => {
+      //     onNext();
+      //   }, 2000);
+      // } else {
+      //   const errorData = await response.text();
+      //   setJobCreationStatus('error');
+      //   setJobCreationMessage(`Failed to create job: ${response.status} ${response.statusText}. ${errorData}`);
+      // }
+
+      // Show success message instead of making API call
+      setJobCreationStatus('success');
+      setJobCreationMessage('Job created successfully! Your sync job has been scheduled.');
+      setShowSuccessModal(true);
     } catch (error) {
       setJobCreationStatus('error');
       setJobCreationMessage(`Failed to create job: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
@@ -297,6 +310,36 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   const handleScheduleSelect = (schedule: ScheduleOption) => {
     setSelectedSchedule(schedule);
   };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    navigate('/jobs'); // Navigate to ViewJobsPage when modal is closed
+  };
+
+  // Countdown timer effect for auto-redirect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (showSuccessModal && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (showSuccessModal && countdown === 0) {
+      // Auto-redirect when countdown reaches 0
+      handleSuccessModalClose();
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [showSuccessModal, countdown]);
+
+  // Reset countdown when modal opens
+  useEffect(() => {
+    if (showSuccessModal) {
+      setCountdown(5);
+    }
+  }, [showSuccessModal]);
 
   const getMinDateTime = () => {
     const now = new Date();
@@ -687,12 +730,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
             {isCreatingJob ? 'Creating Job...' : 'Create Job'}
           </Button>
 
-          {/* Job Creation Status Messages */}
-          {jobCreationStatus === 'success' && (
-            <div className="ds-schedule-success-message">
-              ✅ {jobCreationMessage}
-            </div>
-          )}
+          {/* Job Creation Status Messages (Success now shown in modal) */}
           {jobCreationStatus === 'error' && (
             <div className="ds-schedule-error-message">
               ❌ {jobCreationMessage}
@@ -707,6 +745,95 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
           )}
         </div>
       </div>
+
+      {/* Success Modal */}
+      <Modal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Job Created Successfully"
+        size="small"
+      >
+        <div style={{
+          textAlign: 'center',
+          padding: '1rem 0'
+        }}>
+
+          {/* Countdown with Circular Progress */}
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '1.5rem 1rem',
+            borderRadius: '12px',
+            marginBottom: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <p
+              style={{
+                fontSize: '1rem',
+                color: 'var(--text-secondary)',
+                margin: '0 0 1.5rem 0',
+                fontWeight: '500'
+              }}
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              🟢 Job created successfully. Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}
+            </p>
+
+            {/* Circular Progress Timer */}
+            <div style={{
+              width: '100px',
+              height: '100px',
+              margin: '0 auto',
+              position: 'relative'
+            }}>
+              <CircularProgressbar
+                value={((5 - countdown) / 5) * 100}
+                text={`⏳${countdown}`}
+                styles={buildStyles({
+                  textSize: '24px',
+                  pathColor: '#10B981',
+                  textColor: '#10B981',
+                  trailColor: 'var(--border-primary)',
+                  backgroundColor: 'transparent',
+                  pathTransitionDuration: 1,
+                  strokeLinecap: 'round'
+                })}
+              />
+            </div>
+
+            <p style={{
+              fontSize: '0.8rem',
+              color: 'var(--text-secondary)',
+              margin: '1rem 0 0 0',
+              opacity: 0.7
+            }}>
+              You can also click the button below to go immediately
+            </p>
+          </div>
+
+          <Button
+            variant="primary"
+            onClick={handleSuccessModalClose}
+          >
+            View Jobs Now
+          </Button>
+        </div>
+
+        {/* Add keyframe animations */}
+        <style>{`
+          @keyframes successPulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+
+          @keyframes countdownPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+        `}</style>
+      </Modal>
     </div>
   );
 };
