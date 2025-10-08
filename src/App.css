@@ -3709,14 +3709,6 @@
   border-right: none;
 }
 
-/* Special styling for Source and Target field headers */
-.field-mapping-table .column-header:nth-child(4),
-.field-mapping-table .column-header:nth-child(5) {
-  font-weight: 800;
-  font-size: 12px;
-  color: #1565c0;
-}
-
 /* Add subtle shine effect */
 .field-mapping-table .column-header:before {
   content: '';

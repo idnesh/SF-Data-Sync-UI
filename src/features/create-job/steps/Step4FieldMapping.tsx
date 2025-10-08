@@ -416,8 +416,8 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           <div className="column-header">Include in Sync</div>
           <div className="column-header">Primary Key</div>
           <div className="column-header">Mask PII</div>
-          <div className="column-header">Source Field ({jobData?.sourceObject || 'Contact'})</div>
-          <div className="column-header">Target Field ({jobData?.targetObject || 'Contact__c'})</div>
+          <div className="column-header">Source Field (<span style={{ color: '#3B82F6', fontWeight: '800', padding: '2px 6px'}}>{jobData?.sourceObject || 'Contact'}</span>)</div>
+          <div className="column-header">Target Field (<span style={{ color: '#3B82F6', fontWeight: '800', padding: '2px 6px'}}>{jobData?.targetObject || 'Contact__c'}</span>)</div>
           <div className="column-header">AI Confidence</div>
         </div>
         <div className="table-body-scrollable">
