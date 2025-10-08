@@ -12,7 +12,6 @@ import HomePage from './pages/HomePage'
 import DashboardPage from './pages/DashboardPage'
 import DataSyncPage from './pages/DataSyncPage'
 import DataCleansingPage from './pages/DataCleansingPage'
-import { ViewJobsPage } from './features/jobs/ViewJobsPage'
 import LandingPageLayout from './components/layout/LandingPageLayout'
 import './index.css'
 
@@ -79,7 +78,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             element={
               <ProtectedRoute>
                 <LandingPageLayout title="R-DataX" subtitle="View and manage all synchronization jobs">
-                  <ViewJobsPage />
+                  <DataSyncPage />
                 </LandingPageLayout>
               </ProtectedRoute>
             }

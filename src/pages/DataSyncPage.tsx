@@ -34,6 +34,16 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, number, change, onClic
 const DataSyncDashboard: React.FC = () => {
   const navigate = useNavigate();
 
+  const handleCreateNewJob = () => {
+    // Clear localStorage items for a fresh start
+    localStorage.removeItem('job-wizard-draft');
+    localStorage.removeItem('jobWizard_sourceConnection');
+    localStorage.removeItem('jobWizard_targetConnection');
+
+    // Navigate to create job page
+    navigate('/data-sync/create-job');
+  };
+
   return (
     <div className="ds-dashboard">
       {/* Statistics Dashboard */}
@@ -60,7 +70,7 @@ const DataSyncDashboard: React.FC = () => {
         <div className="ds-cta-buttons">
           <button
             className="ds-action-btn ds-primary-action"
-            onClick={() => navigate('/data-sync/create-job')}
+            onClick={handleCreateNewJob}
             aria-label="Create a new data synchronization job"
           >
             <span className="ds-btn-icon">➕</span>
@@ -91,16 +101,26 @@ export const DataSyncPage: React.FC = () => {
     navigate('/data-sync');
   };
 
+  const handleCreateJob = () => {
+    // Clear localStorage items for a fresh start
+    localStorage.removeItem('job-wizard-draft');
+    localStorage.removeItem('jobWizard_sourceConnection');
+    localStorage.removeItem('jobWizard_targetConnection');
+
+    // Navigate to create job page
+    navigate('/data-sync/create-job');
+  };
+
   const renderCurrentView = () => {
     const path = location.pathname;
 
     if (path === '/data-sync/create-job') {
-      return <JobWizard onExit={() => navigate('/data-sync/job-details')} />;
+      return <JobWizard onExit={() => navigate('/data-sync')} />;
     } else if (path === '/data-sync/job-details') {
       return (
         <ViewJobsPage
           onBackToDashboard={handleBackToDashboard}
-          onCreateJob={() => navigate('/data-sync/create-job')}
+          onCreateJob={handleCreateJob}
         />
       );
     } else {
