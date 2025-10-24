@@ -212,52 +212,33 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         const result = await response.json();
         console.log('Test response:', result);
 
-        // Handle different response formats
-        if (result.jobId && !result.id) {
-          // Format 1: Response has jobId but no id
-          if (result.jobState === 'JobComplete') {
-            // Show success message for completed job
-            const testResult = {
-              success: true,
-              recordsProcessed: result.recordsProcessed || 0,
-              recordsSucceeded: result.recordsProcessed || 0,
-              recordsFailed: result.recordsFailed || 0,
-              errors: [],
-              estimatedDuration: 0,
-              sampleData: []
-            };
+        // Extract jobId from response
+        const jobId = result.jobId;
+        if (!jobId) {
+          throw new Error('No jobId received in response');
+        }
 
-            onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
-            console.log('Sync completed successfully');
-            setTestCompleted(true);
-          } else {
-            // Job not complete yet
-            const testResult = {
-              success: false,
-              recordsProcessed: 0,
-              recordsSucceeded: 0,
-              recordsFailed: 0,
-              errors: [{ field: 'Status', message: `Job state: ${result.jobState}`, record: null }],
-              estimatedDuration: 0,
-              sampleData: []
-            };
+        console.log('Job started with ID:', jobId);
 
-            onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
-            setTestCompleted(true);
-          }
-        } else if (result.id && !result.jobId) {
-          // Format 2: Response has id but no jobId - make follow-up API call
+        // Poll job status API up to 5 times with 1-second intervals
+        let pollCount = 0;
+        const maxPolls = 5;
+
+        const pollJobStatus = async (): Promise<void> => {
           try {
-            const statusResponse = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/jobStatus?jobId=${result.id}`);
+            const statusResponse = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/jobStatus?jobId=${jobId}`);
 
-            if (statusResponse.ok) {
-              const statusResult = await statusResponse.json();
-              console.log('Job status response:', statusResult);
+            if (!statusResponse.ok) {
+              throw new Error(`Status check failed: ${statusResponse.status}`);
+            }
 
-              // Extract data from nested jobState object
-              const jobState = statusResult.jobState || {};
-              const recordsProcessed = jobState.numberRecordsProcessed || 0;
-              const recordsFailed = jobState.numberRecordsFailed || 0;
+            const statusResult = await statusResponse.json();
+            console.log(`Poll ${pollCount + 1}: Job status response:`, statusResult);
+
+            if (statusResult.jobState === 'JobComplete') {
+              // Job completed successfully
+              const recordsProcessed = statusResult.recordsProcessed || 0;
+              const recordsFailed = statusResult.recordsFailed || 0;
               const recordsSucceeded = recordsProcessed - recordsFailed;
 
               const testResult = {
@@ -266,25 +247,45 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 recordsSucceeded,
                 recordsFailed,
                 errors: [],
-                estimatedDuration: jobState.totalProcessingTime || 0,
+                estimatedDuration: statusResult.jobDetails?.totalProcessingTime || 0,
                 sampleData: []
               };
 
               onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
               console.log(`Test completed: ${recordsSucceeded}/${recordsProcessed} records succeeded`);
               setTestCompleted(true);
-            } else {
-              throw new Error(`Status check failed: ${statusResponse.status}`);
+              return;
             }
-          } catch (statusError) {
-            console.error('Failed to check job status:', statusError);
+
+            // Job not complete yet, continue polling if we haven't reached max attempts
+            pollCount++;
+            if (pollCount < maxPolls) {
+              console.log(`Job state: ${statusResult.jobState}, polling again in 1 second...`);
+              setTimeout(pollJobStatus, 1000);
+            } else {
+              // Max polls reached, job didn't complete
+              const testResult = {
+                success: false,
+                recordsProcessed: 0,
+                recordsSucceeded: 0,
+                recordsFailed: 0,
+                errors: [{ field: 'Timeout', message: `Job did not complete after ${maxPolls} polls. Current state: ${statusResult.jobState}`, record: null }],
+                estimatedDuration: 0,
+                sampleData: []
+              };
+
+              onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
+              setTestCompleted(true);
+            }
+          } catch (pollError) {
+            console.error('Error polling job status:', pollError);
 
             const testResult = {
               success: false,
               recordsProcessed: 0,
               recordsSucceeded: 0,
               recordsFailed: sampleSize,
-              errors: [{ field: 'API', message: 'Failed to check job status', record: null }],
+              errors: [{ field: 'Polling', message: `Failed to check job status: ${pollError instanceof Error ? pollError.message : 'Unknown error'}`, record: null }],
               estimatedDuration: 0,
               sampleData: []
             };
@@ -292,26 +293,10 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
             onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
             setTestCompleted(true);
           }
-        } else {
-          // Fallback: Handle legacy format or unexpected response
-          const recordsProcessed = result.numberRecordsProcessed || 0;
-          const recordsFailed = result.numberRecordsFailed || 0;
-          const recordsSucceeded = recordsProcessed - recordsFailed;
+        };
 
-          const testResult = {
-            success: recordsFailed === 0,
-            recordsProcessed,
-            recordsSucceeded,
-            recordsFailed,
-            errors: [],
-            estimatedDuration: result.totalProcessingTime || 0,
-            sampleData: []
-          };
-
-          onUpdateTestResult(testResult, true, sampleSize, testStartDate, testStartTime, testEndDate, testEndTime);
-          console.log(`Test completed: ${recordsSucceeded}/${recordsProcessed} records succeeded`);
-          setTestCompleted(true);
-        }
+        // Start polling immediately
+        await pollJobStatus();
       } else {
         const errorData = await response.text();
         console.error('Test failed:', response.status, errorData);
