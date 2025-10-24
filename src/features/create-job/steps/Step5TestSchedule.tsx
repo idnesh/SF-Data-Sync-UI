@@ -159,9 +159,9 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
     setTestCompleted(false);
     setIsTestRunning(true);
     try {
-      // Create test date strings in UTC format
-      const testFromDate = new Date(`${testStartDate}T${testStartTime}:00`).toISOString();
-      const testToDate = new Date(`${testEndDate}T${testEndTime}:00`).toISOString();
+      // Create test date strings in UTC format with milliseconds
+      const testFromDate = new Date(`${testStartDate}T${testStartTime}:00.000Z`).toISOString();
+      const testToDate = new Date(`${testEndDate}T${testEndTime}:00.000Z`).toISOString();
 
       // Helper function to determine field type based on field name
       const getFieldType = (fieldName: string): string => {
@@ -376,9 +376,9 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         'custom': { frequency: '0', timeUnit: 'CRON' },
       };
 
-      // Create ISO date strings in UTC format
-      const fromDate = new Date(`${startDate}T${startTime}:00`).toISOString();
-      const toDate = new Date(`${endDate}T${endTime}:00`).toISOString();
+      // Create ISO date strings in UTC format with milliseconds
+      const fromDate = new Date(`${startDate}T${startTime}:00.000Z`).toISOString();
+      const toDate = new Date(`${endDate}T${endTime}:00.000Z`).toISOString();
 
       // Helper function to determine field type based on field name
       const getFieldType = (fieldName: string): string => {
