@@ -156,7 +156,6 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
                     <th className="ds-jobs-th">Schedule</th>
                     <th className="ds-jobs-th">Duration</th>
                     <th className="ds-jobs-th">Field Mappings</th>
-                    <th className="ds-jobs-th">JSON Data</th>
                   </tr>
                 </thead>
                 <tbody className="ds-jobs-tbody">
@@ -203,15 +202,6 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
                               </div>
                             ))}
                           </div>
-                        </details>
-                      </td>
-
-                      <td className="ds-jobs-td ds-jobs-json-cell">
-                        <details className="ds-jobs-json-details">
-                          <summary className="ds-jobs-json-summary">View JSON</summary>
-                          <pre className="ds-jobs-json-content">
-                            {JSON.stringify(jobData, null, 2)}
-                          </pre>
                         </details>
                       </td>
                     </tr>
