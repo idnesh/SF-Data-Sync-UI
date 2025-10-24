@@ -83,7 +83,7 @@ const isPIIField = (fieldName: string): boolean => {
 // Helper function to detect primary key fields
 const isPrimaryKeyField = (fieldName: string): boolean => {
   const primaryKeyPatterns = [
-    /^id$/i, /firstname/i, /lastname/i, /email/i, /accountid/i
+    /^id$/i
   ];
   return primaryKeyPatterns.some(pattern => pattern.test(fieldName));
 };
