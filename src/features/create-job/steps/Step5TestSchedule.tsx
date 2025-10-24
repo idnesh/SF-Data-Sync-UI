@@ -486,9 +486,11 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   const getMinDateTime = () => {
     const now = new Date();
-    now.setMinutes(now.getMinutes() + 30); // At least 30 minutes from now
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1); // Allow from one day before
+    now.setMinutes(now.getMinutes() + 30); // At least 30 minutes from now for time validation
     return {
-      minDate: now.toISOString().split('T')[0],
+      minDate: yesterday.toISOString().split('T')[0],
       minTime: now.toTimeString().slice(0, 5)
     };
   };
