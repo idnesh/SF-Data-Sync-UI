@@ -504,7 +504,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   const isTestDateTimeValid = isTestStartDateTimeValid && isTestEndDateTimeValid;
 
   // Validation functions for main job
-  const isStartDateTimeValid = startDate && startTime && new Date(`${startDate}T${startTime}`) > new Date();
+  const isStartDateTimeValid = startDate && startTime;
   const isEndDateTimeValid = endDate && endTime && startDate && startTime &&
     new Date(`${endDate}T${endTime}`) > new Date(`${startDate}T${startTime}`);
   const isCronValid = selectedSchedule !== 'custom' || (customCron && customCron.trim().length > 0);
@@ -827,11 +827,6 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 )}
 
                 {/* Job Validation Errors */}
-                {!isStartDateTimeValid && startDate && startTime && (
-                  <div className="ds-schedule-error-message">
-                    Job start time must be at least 30 minutes from now
-                  </div>
-                )}
                 {!isEndDateTimeValid && endDate && endTime && startDate && startTime && (
                   <div className="ds-schedule-error-message">
                     Job end time must be after start time
