@@ -183,8 +183,8 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     });
 
     const interval = setInterval(() => {
-      currentProgress += 3.33; // 3.33% every 100ms = 3 seconds total
-      setProgress(currentProgress);
+      currentProgress += 100 / 30; // 100% / 30 intervals = 3.333...% per interval
+      setProgress(Math.min(currentProgress, 100)); // Cap at 100%
 
       // Update processing step every 20% progress
       if (currentProgress >= 20 && currentStep === 0) {

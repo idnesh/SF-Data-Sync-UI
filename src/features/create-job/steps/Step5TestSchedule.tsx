@@ -49,7 +49,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   const [testStartTime, setTestStartTime] = useState<string>(jobData.testStartTime || '');
   const [testEndDate, setTestEndDate] = useState<string>(jobData.testEndDate || '');
   const [testEndTime, setTestEndTime] = useState<string>(jobData.testEndTime || '');
-  const [sampleSize, setSampleSize] = useState<number>(jobData.sampleSize || 50);
+  const [sampleSize, setSampleSize] = useState<number>(jobData.sampleSize || 0);
 
   // Main Job Schedule State
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleOption>(jobData.schedule || '6hours');
@@ -593,7 +593,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 <select
                   className="ds-schedule-sample-select"
                   value={sampleSize}
-                  onChange={(e) => setSampleSize(parseInt(e.target.value) || 50)}
+                  onChange={(e) => setSampleSize(parseInt(e.target.value) || 0)}
                   disabled={isTestRunning}
                 >
                   <option value={50}>50 records</option>
