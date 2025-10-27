@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/common/Button';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ViewJobsPageProps {
   onBackToDashboard?: () => void;
@@ -90,6 +92,65 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
     return `Every ${freq} ${unit}`;
   };
 
+  const handleEditJob = (jobName: string) => {
+    console.log('Edit job:', jobName);
+    // TODO: Implement edit functionality
+    alert(`Edit job: ${jobName}`);
+  };
+
+  const handleDeleteJob = async (jobName: string) => {
+    console.log('Delete job:', jobName);
+
+    if (!confirm(`Are you sure you want to delete job "${jobName}"?`)) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Get the job data to send in the request body
+      const jobData = jobs[jobName];
+      if (!jobData) {
+        throw new Error('Job data not found');
+      }
+
+      // Prepare the request body using the job data
+      const requestBody = {
+        name: jobData.name,
+        schedule: jobData.schedule,
+        sourceObject: jobData.sourceObject,
+        targetObject: jobData.targetObject,
+        extId: jobData.extId,
+        fieldMaping: jobData.fieldMaping
+      };
+
+      console.log('Deleting job with request body:', requestBody);
+
+      const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/deleteJob?key=${encodeURIComponent(jobData.name)}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        console.log('Job deleted successfully');
+        // Refresh the job list after successful deletion
+        await fetchJobs();
+      } else {
+        const errorData = await response.text();
+        console.error('Delete failed:', response.status, errorData);
+        setError(`Failed to delete job: ${response.status} ${response.statusText}. ${errorData}`);
+      }
+    } catch (err) {
+      console.error('Error deleting job:', err);
+      setError(`Failed to delete job: ${err instanceof Error ? err.message : 'Unknown error occurred'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="ds-jobs-page">
       {/* Header Section */}
@@ -156,6 +217,7 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
                     <th className="ds-jobs-th">Schedule</th>
                     <th className="ds-jobs-th">Duration</th>
                     <th className="ds-jobs-th">Field Mappings</th>
+                    <th className="ds-jobs-th">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="ds-jobs-tbody">
@@ -203,6 +265,41 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
                             ))}
                           </div>
                         </details>
+                      </td>
+
+                      <td className="ds-jobs-td ds-jobs-actions-cell">
+                        <div className="ds-jobs-actions">
+                          <span
+                            className="action-icon edit-icon"
+                            onClick={() => handleEditJob(jobName)}
+                            aria-label="Edit job"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleEditJob(jobName);
+                              }
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </span>
+                          <span
+                            className={`action-icon delete-icon ${isLoading ? 'disabled' : ''}`}
+                            onClick={isLoading ? undefined : () => handleDeleteJob(jobName)}
+                            aria-label="Delete job"
+                            role="button"
+                            tabIndex={isLoading ? -1 : 0}
+                            onKeyDown={isLoading ? undefined : (e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleDeleteJob(jobName);
+                              }
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}
