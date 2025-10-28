@@ -65,6 +65,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
   const [endDate, setEndDate] = useState<string>(jobData.endDate || '');
   const [endTime, setEndTime] = useState<string>(jobData.endTime || '');
   const [customCron, setCustomCron] = useState<string>(jobData.customCron || '');
+  const [includeEndDate, setIncludeEndDate] = useState<boolean>(Boolean(jobData.endDate));
 
   const [testCompleted, setTestCompleted] = useState<boolean>(false);
   const [isTestRunning, setIsTestRunning] = useState<boolean>(false);
@@ -76,19 +77,17 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
     }
   }, [jobData.tested, jobData.testResult]);
 
-  // Generate time options with 30-minute intervals
+  // Generate time options with 1-hour intervals
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const displayTime = new Date(`2000-01-01T${timeStr}`).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        });
-        options.push({ value: timeStr, label: displayTime });
-      }
+      const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+      const displayTime = new Date(`2000-01-01T${timeStr}`).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      options.push({ value: timeStr, label: displayTime });
     }
     return options;
   };
@@ -106,7 +105,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
     if (!testStartTime) {
       const now = new Date();
       now.setHours(now.getHours() + 1);
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${Math.floor(now.getMinutes() / 30) * 30 === 0 ? '00' : '30'}`;
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:00`;
       setTestStartTime(timeStr);
     }
     if (!testEndDate && testStartDate && testStartTime) {
@@ -119,7 +118,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
       // Create proper start datetime and add 2 hours for end time
       const startDateTime = new Date(`${testStartDate}T${testStartTime}:00`);
       startDateTime.setHours(startDateTime.getHours() + 2);
-      const timeStr = `${startDateTime.getHours().toString().padStart(2, '0')}:${Math.floor(startDateTime.getMinutes() / 30) * 30 === 0 ? '00' : '30'}`;
+      const timeStr = `${startDateTime.getHours().toString().padStart(2, '0')}:00`;
       setTestEndTime(timeStr);
     }
   }, [testStartDate, testStartTime, testEndDate, testEndTime]);
@@ -147,8 +146,15 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   // Update parent when schedule changes
   useEffect(() => {
-    onUpdateSchedule(selectedSchedule, startDate, startTime, customCron, endDate, endTime);
-  }, [selectedSchedule, startDate, startTime, customCron, endDate, endTime, onUpdateSchedule]);
+    onUpdateSchedule(
+      selectedSchedule,
+      startDate,
+      startTime,
+      customCron,
+      includeEndDate ? endDate : undefined,
+      includeEndDate ? endTime : undefined
+    );
+  }, [selectedSchedule, startDate, startTime, customCron, endDate, endTime, includeEndDate, onUpdateSchedule]);
 
   const handleTestJob = async () => {
     if (!isTestDateTimeValid) {
@@ -363,7 +369,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
       // Create ISO date strings in UTC format with milliseconds
       const fromDate = new Date(`${startDate}T${startTime}:00.000Z`).toISOString();
-      const toDate = new Date(`${endDate}T${endTime}:00.000Z`).toISOString();
+      const toDate = includeEndDate ? new Date(`${endDate}T${endTime}:00.000Z`).toISOString() : undefined;
 
       // Helper function to determine field type based on field name
       const getFieldType = (fieldName: string): string => {
@@ -390,12 +396,16 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         name: jobData.name,
         schedule: scheduleMapping[selectedSchedule],
         fromDate,
-        toDate,
         sourceObject: jobData.sourceObject,
         targetObject: jobData.targetObject,
         extId: 'extid__c',
         fieldMaping: fieldMappingArray
       };
+
+      // Only include toDate if end date is specified
+      if (includeEndDate && toDate) {
+        requestBody.toDate = toDate;
+      }
 
       console.log('Creating job with request body:', requestBody);
 
@@ -490,8 +500,8 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
   // Validation functions for main job
   const isStartDateTimeValid = startDate && startTime;
-  const isEndDateTimeValid = endDate && endTime && startDate && startTime &&
-    new Date(`${endDate}T${endTime}`) > new Date(`${startDate}T${startTime}`);
+  const isEndDateTimeValid = !includeEndDate || (endDate && endTime && startDate && startTime &&
+    new Date(`${endDate}T${endTime}`) > new Date(`${startDate}T${startTime}`));
   const isCronValid = selectedSchedule !== 'custom' || (customCron && customCron.trim().length > 0);
   const isMainDateTimeValid = selectedSchedule === 'manual' || (selectedSchedule === 'custom' ? isCronValid : (isStartDateTimeValid && isEndDateTimeValid));
 
@@ -521,60 +531,64 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
               </div>
             </div>
 
-            {/* Test Duration - Compact Grid */}
+            {/* Test Duration - Inline Layout */}
             <div className="ds-schedule-test-duration">
               <div className="ds-schedule-duration-grid">
                 <div className="ds-schedule-grid-item">
-                  <label className="ds-schedule-grid-label">Start Date</label>
-                  <input
-                    type="date"
-                    className="ds-schedule-date-input"
-                    value={testStartDate}
-                    min={minDate}
-                    onChange={(e) => setTestStartDate(e.target.value)}
-                    required
-                  />
+                  <label className="ds-schedule-grid-label">
+                    <span className="ds-schedule-group-icon">🚀</span>
+                    Start
+                  </label>
+                  <div className="ds-schedule-grid-controls">
+                    <input
+                      type="date"
+                      className="ds-schedule-date-input"
+                      value={testStartDate}
+                      min={minDate}
+                      onChange={(e) => setTestStartDate(e.target.value)}
+                      required
+                    />
+                    <select
+                      className="ds-schedule-time-select"
+                      value={testStartTime}
+                      onChange={(e) => setTestStartTime(e.target.value)}
+                      required
+                    >
+                      {timeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="ds-schedule-grid-item">
-                  <label className="ds-schedule-grid-label">Start Time</label>
-                  <select
-                    className="ds-schedule-time-select"
-                    value={testStartTime}
-                    onChange={(e) => setTestStartTime(e.target.value)}
-                    required
-                  >
-                    {timeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="ds-schedule-grid-item">
-                  <label className="ds-schedule-grid-label">End Date</label>
-                  <input
-                    type="date"
-                    className="ds-schedule-date-input"
-                    value={testEndDate}
-                    min={testStartDate || minDate}
-                    onChange={(e) => setTestEndDate(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="ds-schedule-grid-item">
-                  <label className="ds-schedule-grid-label">End Time</label>
-                  <select
-                    className="ds-schedule-time-select"
-                    value={testEndTime}
-                    onChange={(e) => setTestEndTime(e.target.value)}
-                    required
-                  >
-                    {timeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="ds-schedule-grid-label">
+                    <span className="ds-schedule-group-icon">🏁</span>
+                    End
+                  </label>
+                  <div className="ds-schedule-grid-controls">
+                    <input
+                      type="date"
+                      className="ds-schedule-date-input"
+                      value={testEndDate}
+                      min={testStartDate || minDate}
+                      onChange={(e) => setTestEndDate(e.target.value)}
+                      required
+                    />
+                    <select
+                      className="ds-schedule-time-select"
+                      value={testEndTime}
+                      onChange={(e) => setTestEndTime(e.target.value)}
+                      required
+                    >
+                      {timeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -701,13 +715,34 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                   <span className="ds-schedule-duration-title">Job Duration</span>
                 </div>
 
-                <div className="ds-schedule-job-grid">
-                  <div className="ds-schedule-job-group">
+                {/* End Date Toggle - Show First */}
+                <div className="ds-schedule-end-date-toggle">
+                  <label className="ds-schedule-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={includeEndDate}
+                      onChange={(e) => {
+                        setIncludeEndDate(e.target.checked);
+                        // Clear end date and time when unchecked
+                        if (!e.target.checked) {
+                          setEndDate('');
+                          setEndTime('');
+                        }
+                      }}
+                      className="ds-schedule-checkbox"
+                    />
+                    Set end date
+                  </label>
+                </div>
+
+                {/* Inline Date/Time Controls */}
+                <div className="ds-schedule-datetime-inline">
+                  <div className="ds-schedule-datetime-group">
                     <div className="ds-schedule-group-label">
                       <span className="ds-schedule-group-icon">🚀</span>
                       Start
                     </div>
-                    <div className="ds-schedule-group-controls">
+                    <div className="ds-schedule-inline-controls">
                       <input
                         type="date"
                         className="ds-schedule-date-input"
@@ -731,38 +766,40 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                     </div>
                   </div>
 
-                  <div className="ds-schedule-job-group">
-                    <div className="ds-schedule-group-label">
-                      <span className="ds-schedule-group-icon">🏁</span>
-                      End
+                  {includeEndDate && (
+                    <div className="ds-schedule-datetime-group">
+                      <div className="ds-schedule-group-label">
+                        <span className="ds-schedule-group-icon">🏁</span>
+                        End
+                      </div>
+                      <div className="ds-schedule-inline-controls">
+                        <input
+                          type="date"
+                          className="ds-schedule-date-input"
+                          value={endDate}
+                          min={startDate || minDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          required
+                        />
+                        <select
+                          className="ds-schedule-time-select"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          required
+                        >
+                          {timeOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
-                    <div className="ds-schedule-group-controls">
-                      <input
-                        type="date"
-                        className="ds-schedule-date-input"
-                        value={endDate}
-                        min={startDate || minDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        required
-                      />
-                      <select
-                        className="ds-schedule-time-select"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        required
-                      >
-                        {timeOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Duration Preview - Compact */}
-                {startDate && startTime && endDate && endTime && isStartDateTimeValid && isEndDateTimeValid && (
+                {startDate && startTime && isStartDateTimeValid && (
                   <div className="ds-schedule-duration-preview">
                     <div className="ds-schedule-preview-grid">
                       <div className="ds-schedule-preview-item">
@@ -777,28 +814,30 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                           })}
                         </span>
                       </div>
-                      <div className="ds-schedule-preview-item">
-                        <span className="ds-schedule-preview-label">Ends</span>
-                        <span className="ds-schedule-preview-value">
-                          {new Date(`${endDate}T${endTime}`).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </span>
-                      </div>
+                      {includeEndDate && endDate && endTime && (
+                        <div className="ds-schedule-preview-item">
+                          <span className="ds-schedule-preview-label">Ends</span>
+                          <span className="ds-schedule-preview-value">
+                            {new Date(`${endDate}T${endTime}`).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit',
+                              hour12: true
+                            })}
+                          </span>
+                        </div>
+                      )}
                       <div className="ds-schedule-preview-item">
                         <span className="ds-schedule-preview-label">Duration</span>
                         <span className="ds-schedule-preview-value">
-                          {(() => {
+                          {includeEndDate && endDate && endTime ? (() => {
                             const start = new Date(`${startDate}T${startTime}`);
                             const end = new Date(`${endDate}T${endTime}`);
                             const diffMs = end.getTime() - start.getTime();
                             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                             return `${diffDays} days`;
-                          })()}
+                          })() : 'Ongoing'}
                         </span>
                       </div>
                       <div className="ds-schedule-preview-item">
@@ -812,7 +851,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 )}
 
                 {/* Job Validation Errors */}
-                {!isEndDateTimeValid && endDate && endTime && startDate && startTime && (
+                {includeEndDate && !isEndDateTimeValid && endDate && endTime && startDate && startTime && (
                   <div className="ds-schedule-error-message">
                     Job end time must be after start time
                   </div>
