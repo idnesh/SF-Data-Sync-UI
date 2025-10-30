@@ -36,7 +36,6 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onExit }) => {
     updateSchedule,
     updateJobData,
     createJob,
-    saveAsDraft,
     clearDraft,
     setError
   } = useJobWizard();
@@ -44,10 +43,10 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onExit }) => {
   const handleExit = () => {
     if (isDirty) {
       const confirmExit = window.confirm(
-        'You have unsaved changes. Would you like to save as draft before leaving?'
+        'You have unsaved changes. Are you sure you want to exit?'
       );
-      if (confirmExit) {
-        saveAsDraft();
+      if (!confirmExit) {
+        return;
       }
     }
 
@@ -204,14 +203,6 @@ export const JobWizard: React.FC<JobWizardProps> = ({ onExit }) => {
           <header className="wizard-header">
             <h3 id="wizard-heading"></h3>
             <div className="header-actions">
-              <Button
-                variant="outline"
-                onClick={saveAsDraft}
-                disabled={!isDirty}
-                aria-label="Save current progress as draft"
-              >
-                Save Draft
-              </Button>
               <Button
                 variant="secondary"
                 onClick={handleExit}

@@ -93,15 +93,6 @@ export const useJobWizard = () => {
     };
   });
 
-  // Save draft to localStorage whenever jobData changes
-  useEffect(() => {
-    if (state.isDirty) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        currentStep: state.currentStep,
-        jobData: state.jobData
-      }));
-    }
-  }, [state.jobData, state.currentStep, state.isDirty]);
 
   const updateJobData = useCallback((updates: Partial<JobData>) => {
     setState(prev => ({
@@ -405,14 +396,6 @@ export const useJobWizard = () => {
     }
   }, [state.jobData, setLoading, setError]);
 
-  // Save as draft
-  const saveAsDraft = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      currentStep: state.currentStep,
-      jobData: state.jobData
-    }));
-    trackEvent('wizard.saved_as_draft', { currentStep: state.currentStep });
-  }, [state.currentStep, state.jobData]);
 
   // Clear draft
   const clearDraft = useCallback(() => {
@@ -449,7 +432,6 @@ export const useJobWizard = () => {
     testJob,
     updateSchedule,
     createJob,
-    saveAsDraft,
     clearDraft,
 
     // Utilities
