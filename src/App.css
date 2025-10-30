@@ -8204,6 +8204,91 @@
   font-weight: 500;
 }
 
+/* Delete Confirmation Modal */
+.ds-delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.ds-delete-modal {
+  background: var(--bg-card);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 380px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+}
+
+.ds-delete-modal-header {
+  padding: var(--ds-spacing-md);
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+}
+
+.ds-delete-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ds-delete-modal-body {
+  padding: var(--ds-spacing-md);
+}
+
+.ds-delete-modal-body p {
+  margin: 0 0 var(--ds-spacing-sm) 0;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.ds-delete-job-info {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--ds-radius-sm);
+  padding: var(--ds-spacing-sm);
+  margin: var(--ds-spacing-sm) 0;
+  text-align: center;
+}
+
+.ds-delete-job-info strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.ds-delete-warning {
+  color: var(--bg-danger) !important;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.ds-delete-modal-actions {
+  padding: var(--ds-spacing-md);
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  gap: var(--ds-spacing-sm);
+  justify-content: flex-end;
+  background: var(--bg-secondary);
+}
+
+.ds-delete-modal-actions .btn {
+  min-width: 80px;
+  padding: var(--ds-spacing-xs) var(--ds-spacing-sm);
+  font-size: 0.875rem;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .ds-jobs-page {
@@ -8245,6 +8330,23 @@
 
   .ds-jobs-table {
     font-size: 0.75rem;
+  }
+
+  .ds-delete-modal {
+    margin: var(--ds-spacing-sm);
+    width: calc(100% - 2 * var(--ds-spacing-sm));
+    max-width: 320px;
+  }
+
+  .ds-delete-modal-actions {
+    flex-direction: column-reverse;
+    gap: var(--ds-spacing-xs);
+  }
+
+  .ds-delete-modal-actions .btn {
+    min-width: auto;
+    width: 100%;
+    padding: var(--ds-spacing-sm);
   }
 
   .ds-jobs-th {

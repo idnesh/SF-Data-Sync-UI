@@ -61,6 +61,10 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
   const [jobs, setJobs] = useState<JobData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    job: JobData | null;
+  }>({ isOpen: false, job: null });
 
   // Fetch jobs from API
   const fetchJobs = async () => {
@@ -125,15 +129,18 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
     alert(`Edit job: ${job.name}`);
   };
 
-  const handleDeleteJob = async (job: JobData) => {
+  const handleDeleteJob = (job: JobData) => {
     console.log('Delete job:', job.name);
+    setDeleteConfirmation({ isOpen: true, job });
+  };
 
-    if (!confirm(`Are you sure you want to delete job "${job.name}"?`)) {
-      return;
-    }
+  const confirmDeleteJob = async () => {
+    const job = deleteConfirmation.job;
+    if (!job) return;
 
     try {
       setIsLoading(true);
+      setDeleteConfirmation({ isOpen: false, job: null });
 
       // Get field mappings from either fieldMapping or fieldMaping
       const fieldMappings = job.jobDetails.fieldMapping || job.jobDetails.fieldMaping || [];
@@ -181,6 +188,10 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const cancelDeleteJob = () => {
+    setDeleteConfirmation({ isOpen: false, job: null });
   };
 
   return (
@@ -374,6 +385,40 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation.isOpen && deleteConfirmation.job && (
+        <div className="ds-delete-modal-overlay">
+          <div className="ds-delete-modal">
+            <div className="ds-delete-modal-header">
+              <h3>Confirm Delete</h3>
+            </div>
+            <div className="ds-delete-modal-body">
+              <p>Delete this job?</p>
+              <div className="ds-delete-job-info">
+                <strong>"{deleteConfirmation.job.name}"</strong>
+              </div>
+              <p className="ds-delete-warning">This cannot be undone.</p>
+            </div>
+            <div className="ds-delete-modal-actions">
+              <Button
+                variant="outline"
+                onClick={cancelDeleteJob}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={confirmDeleteJob}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Deleting...' : 'Delete Job'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
