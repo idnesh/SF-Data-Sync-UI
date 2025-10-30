@@ -142,35 +142,10 @@ export const ViewJobsPage: React.FC<ViewJobsPageProps> = ({
       setIsLoading(true);
       setDeleteConfirmation({ isOpen: false, job: null });
 
-      // Get field mappings from either fieldMapping or fieldMaping
-      const fieldMappings = job.jobDetails.fieldMapping || job.jobDetails.fieldMaping || [];
+      console.log('Deleting job with key:', job.name);
 
-      // Prepare the request body using the job data
-      const requestBody = {
-        name: job.name,
-        schedule: job.jobDetails.schedule || {
-          frequency: "30",
-          timeUnit: "MINUTES"
-        },
-        isActive: job.jobDetails.isActive || false,
-        sourceOrg: job.sourceOrg,
-        targetOrg: job.targetOrg,
-        fromDate: job.fromDate,
-        toDate: job.toDate,
-        sourceObject: job.sourceObject,
-        targetObject: job.targetObject,
-        extId: job.jobDetails.extId || 'extid__c',
-        fieldMaping: fieldMappings
-      };
-
-      console.log('Deleting job with request body:', requestBody);
-
-      const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/deleteJob?key=${encodeURIComponent(job.name)}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
+      const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/deleteJobSfdc?key=${encodeURIComponent(job.name)}`, {
+        method: 'GET'
       });
 
       if (response.ok) {
