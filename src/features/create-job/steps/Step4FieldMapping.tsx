@@ -1,10 +1,12 @@
 // Step 4: Field Mapping Component
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from '../../../components/common/Button';
+import { Modal } from '../../../components/common/Modal';
 import { FieldMapping, FieldMappingMetadata } from '../types';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+import WarningIcon from '@mui/icons-material/Warning';
 
 // API Response interfaces
 interface APIFieldMapping {
@@ -112,6 +114,42 @@ const fetchFieldMappings = async (objectName: string): Promise<APIFieldMapping[]
   }
 };
 
+// Interface for picklist values
+interface PicklistValue {
+  label: string;
+  value: string;
+  isActive: boolean;
+}
+
+// Interface for field metadata
+interface FieldMetadata {
+  name: string;
+  type: string;
+  label: string;
+  picklistValues?: PicklistValue[];
+}
+
+// Interface for object metadata response
+interface ObjectMetadata {
+  objectName: string;
+  fields: FieldMetadata[];
+}
+
+// API function to fetch object metadata with picklist values
+const fetchObjectMetadata = async (objectName: string, org: 'source' | 'target'): Promise<ObjectMetadata | null> => {
+  try {
+    const response = await fetch(`https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/getSfdcObjects?objectName=${objectName}&org=${org}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: ObjectMetadata = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching object metadata:', error);
+    return null;
+  }
+};
+
 // Note: Field names are displayed exactly as received from API
 
 // Function to detect if a field should be treated as Picklist based on name patterns
@@ -130,6 +168,157 @@ const convertFieldType = (fieldName: string, fieldType: string): string => {
     return 'Picklist';
   }
   return fieldType;
+};
+
+// Interface for picklist mismatch validation
+interface PicklistMismatch {
+  sourceField: string;
+  targetField: string;
+  missingValues: string[];
+  extraValues: string[];
+  severity: 'warning' | 'error';
+}
+
+// Function to validate picklist values between source and target
+const validatePicklistValues = (
+  sourcePicklistValues: PicklistValue[],
+  targetPicklistValues: PicklistValue[],
+  sourceField: string,
+  targetField: string
+): PicklistMismatch | null => {
+  if (!sourcePicklistValues || !targetPicklistValues) {
+    return null;
+  }
+
+  const sourceValues = sourcePicklistValues.map(pv => pv.value);
+  const targetValues = targetPicklistValues.map(pv => pv.value);
+
+  // Find values in source that don't exist in target
+  const missingValues = sourceValues.filter(value => !targetValues.includes(value));
+
+  // Find values in target that don't exist in source (less critical)
+  const extraValues = targetValues.filter(value => !sourceValues.includes(value));
+
+  if (missingValues.length > 0) {
+    return {
+      sourceField,
+      targetField,
+      missingValues,
+      extraValues,
+      severity: missingValues.length > 2 ? 'error' : 'warning'
+    };
+  }
+
+  return null;
+};
+
+// PicklistMappingDialog Component
+interface PicklistMappingDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  mismatch: PicklistMismatch;
+  sourcePicklistValues: PicklistValue[];
+  targetPicklistValues: PicklistValue[];
+  onSaveMapping: (mapping: Record<string, string>) => void;
+}
+
+const PicklistMappingDialog: React.FC<PicklistMappingDialogProps> = ({
+  isOpen,
+  onClose,
+  mismatch,
+  sourcePicklistValues,
+  targetPicklistValues,
+  onSaveMapping
+}) => {
+  const [mappings, setMappings] = useState<Record<string, string>>({});
+
+  // Initialize mappings when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      const initialMappings: Record<string, string> = {};
+      mismatch.missingValues.forEach(value => {
+        initialMappings[value] = ''; // Start with empty mapping
+      });
+      setMappings(initialMappings);
+    }
+  }, [isOpen, mismatch.missingValues]);
+
+  const handleMappingChange = (sourceValue: string, targetValue: string) => {
+    setMappings(prev => ({
+      ...prev,
+      [sourceValue]: targetValue
+    }));
+  };
+
+  const handleSave = () => {
+    onSaveMapping(mappings);
+    onClose();
+  };
+
+  const canSave = mismatch.missingValues.every(value => mappings[value] !== '');
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Picklist Value Mapping"
+      size="large"
+    >
+      <div style={{ padding: '0', margin: '0' }}>
+        <div style={{ padding: '0.75rem', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '4px', marginBottom: '1rem' }}>
+          <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#92400e' }}>
+            <strong>"{mismatch.sourceField}"</strong> → <strong>"{mismatch.targetField}"</strong>
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0.75rem', marginBottom: '0.5rem', padding: '0.4rem 0.5rem', background: '#f9fafb', borderRadius: '3px', fontSize: '0.8rem', fontWeight: '600', color: '#6b7280' }}>
+            <span>Source Value</span>
+            <span>→</span>
+            <span>Target Value</span>
+          </div>
+
+          {mismatch.missingValues.map(sourceValue => (
+            <div key={sourceValue} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0.75rem', alignItems: 'center', padding: '0.5rem', background: '#fff', borderRadius: '4px', marginBottom: '0.4rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ padding: '0.3rem 0.5rem', borderRadius: '3px', fontWeight: '500', fontSize: '0.8rem', background: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' }}>
+                  {sourceValue}
+                </span>
+              </div>
+              <div style={{ color: '#6b7280', fontWeight: '600', textAlign: 'center', fontSize: '0.8rem' }}>→</div>
+              <div>
+                <select
+                  value={mappings[sourceValue] || ''}
+                  onChange={(e) => handleMappingChange(sourceValue, e.target.value)}
+                  style={{ width: '100%', padding: '0.4rem', border: '1px solid #d1d5db', borderRadius: '3px', fontSize: '0.8rem' }}
+                >
+                  <option value="">Select target value...</option>
+                  {targetPicklistValues.map(targetValue => (
+                    <option key={targetValue.value} value={targetValue.value}>
+                      {targetValue.label || targetValue.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={!canSave}
+          >
+            Save Mapping
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
 };
 
 // Transform API response to MappingRow format
@@ -176,6 +365,14 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempTargetField, setTempTargetField] = useState<string>('');
   const [selectAllChecked, setSelectAllChecked] = useState<boolean>(false);
+
+  // Picklist validation state
+  const [picklistMismatches, setPicklistMismatches] = useState<PicklistMismatch[]>([]);
+  const [sourceMetadata, setSourceMetadata] = useState<ObjectMetadata | null>(null);
+  const [targetMetadata, setTargetMetadata] = useState<ObjectMetadata | null>(null);
+  const [showMappingDialog, setShowMappingDialog] = useState(false);
+  const [currentMismatch, setCurrentMismatch] = useState<PicklistMismatch | null>(null);
+  const [picklistMappings, setPicklistMappings] = useState<Record<string, Record<string, string>>>({});
 
   // API call and loader effect with progress animation - 3 seconds total
   useEffect(() => {
@@ -254,6 +451,51 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
       setSelectAllChecked(allChecked);
     }
   }, [mappingRows]);
+
+  // Picklist validation effect - runs after mappings are loaded
+  useEffect(() => {
+    const validatePicklists = async () => {
+      if (mappingRows.length === 0 || !jobData?.sourceObject || !jobData?.targetObject) return;
+
+      // Fetch metadata for both source and target objects
+      const [sourceMetadataResponse, targetMetadataResponse] = await Promise.all([
+        fetchObjectMetadata(jobData.sourceObject, 'source'),
+        fetchObjectMetadata(jobData.targetObject, 'target')
+      ]);
+
+      if (!sourceMetadataResponse || !targetMetadataResponse) return;
+
+      setSourceMetadata(sourceMetadataResponse);
+      setTargetMetadata(targetMetadataResponse);
+
+      // Validate picklist fields
+      const mismatches: PicklistMismatch[] = [];
+
+      mappingRows.forEach(row => {
+        if (row.sourceType === 'Picklist' && row.targetType === 'Picklist') {
+          const sourceField = sourceMetadataResponse.fields.find(f => f.name === row.sourceField);
+          const targetField = targetMetadataResponse.fields.find(f => f.name === row.targetField);
+
+          if (sourceField?.picklistValues && targetField?.picklistValues) {
+            const mismatch = validatePicklistValues(
+              sourceField.picklistValues,
+              targetField.picklistValues,
+              row.sourceField,
+              row.targetField
+            );
+
+            if (mismatch) {
+              mismatches.push(mismatch);
+            }
+          }
+        }
+      });
+
+      setPicklistMismatches(mismatches);
+    };
+
+    validatePicklists();
+  }, [mappingRows, jobData?.sourceObject, jobData?.targetObject]);
 
   // Comprehensive validations
   const validationResults = useMemo(() => {
@@ -398,7 +640,33 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, []);
 
+  // Picklist dialog handlers
+  const handleOpenPicklistMapping = useCallback((mismatch: PicklistMismatch) => {
+    setCurrentMismatch(mismatch);
+    setShowMappingDialog(true);
+  }, []);
 
+  const handleClosePicklistMapping = useCallback(() => {
+    setShowMappingDialog(false);
+    setCurrentMismatch(null);
+  }, []);
+
+  const handleSavePicklistMapping = useCallback((mapping: Record<string, string>) => {
+    if (!currentMismatch) return;
+
+    const fieldKey = `${currentMismatch.sourceField}->${currentMismatch.targetField}`;
+    setPicklistMappings(prev => ({
+      ...prev,
+      [fieldKey]: mapping
+    }));
+
+    // Remove this mismatch from the list as it's been resolved
+    setPicklistMismatches(prev =>
+      prev.filter(m =>
+        !(m.sourceField === currentMismatch.sourceField && m.targetField === currentMismatch.targetField)
+      )
+    );
+  }, [currentMismatch]);
 
   const handleSaveMappings = useCallback(() => {
     const newMappings: FieldMapping = {};
@@ -479,6 +747,41 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           Some default mappings are pre-configured to get you started.
         </p>
       </div>
+
+      {/* Picklist Validation Warnings */}
+      {picklistMismatches.length > 0 && (
+        <div className="ds-fieldmapping-validation-warnings">
+          <div className="ds-fieldmapping-warning-header">
+            <WarningIcon className="ds-fieldmapping-warning-icon" />
+            <h4 className="ds-fieldmapping-warning-title">Picklist Issues</h4>
+          </div>
+          {picklistMismatches.map((mismatch, index) => (
+            <div key={index} className={`ds-fieldmapping-warning-item ${index < picklistMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
+              <div className="ds-fieldmapping-warning-content">
+                <div className="ds-fieldmapping-field-mapping">
+                  {mismatch.sourceField} → {mismatch.targetField}
+
+                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
+                    {mismatch.severity}
+                  </span>
+
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={() => handleOpenPicklistMapping(mismatch)}
+                    className="ds-fieldmapping-map-button"
+                  >
+                    Map Values
+                  </Button>
+                </div>
+                <div className="ds-fieldmapping-missing-values">
+                  Missing values: <strong>{mismatch.missingValues.join(', ')}</strong>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="field-mapping-table">
         <div className="table-header-fixed">
@@ -691,6 +994,22 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           Continue to Simulate
         </Button>
       </div>
+
+      {/* Picklist Mapping Dialog */}
+      {showMappingDialog && currentMismatch && sourceMetadata && targetMetadata && (
+        <PicklistMappingDialog
+          isOpen={showMappingDialog}
+          onClose={handleClosePicklistMapping}
+          mismatch={currentMismatch}
+          sourcePicklistValues={
+            sourceMetadata.fields.find(f => f.name === currentMismatch.sourceField)?.picklistValues || []
+          }
+          targetPicklistValues={
+            targetMetadata.fields.find(f => f.name === currentMismatch.targetField)?.picklistValues || []
+          }
+          onSaveMapping={handleSavePicklistMapping}
+        />
+      )}
     </div>
   );
 };
