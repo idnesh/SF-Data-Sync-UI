@@ -758,21 +758,23 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           {picklistMismatches.map((mismatch, index) => (
             <div key={index} className={`ds-fieldmapping-warning-item ${index < picklistMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
               <div className="ds-fieldmapping-warning-content">
-                <div className="ds-fieldmapping-field-mapping">
-                  {mismatch.sourceField} → {mismatch.targetField}
-
+                <div className="ds-fieldmapping-warning-subheader">
+                  <div className="ds-fieldmapping-field-mapping">
+                    {mismatch.sourceField} → {mismatch.targetField}
+                  </div>
+                  <div className="ds-fieldmapping-warning-actions">
                     <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
-                    {mismatch.severity}
-                  </span>
-
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    onClick={() => handleOpenPicklistMapping(mismatch)}
-                    className="ds-fieldmapping-map-button"
-                  >
-                    Map Values
-                  </Button>
+                      {mismatch.severity}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleOpenPicklistMapping(mismatch)}
+                      className="ds-fieldmapping-map-button"
+                    >
+                      Map Values
+                    </Button>
+                  </div>
                 </div>
                 <div className="ds-fieldmapping-missing-values">
                   Missing values: <strong>{mismatch.missingValues.join(', ')}</strong>
