@@ -116,13 +116,30 @@ const fetchFieldMappings = async (objectName: string): Promise<APIFieldMapping[]
       targetType: "String"
     };
 
-    // Add the mapping if it doesn't already exist
-    const exists = mappings.some(mapping =>
+    // Add the Last_Viewed_Date mapping with empty target as specified in the requirements
+    const lastViewedDateMapping: APIFieldMapping = {
+      source: "Last_Viewed_Date",
+      sourceType: "String",
+      target: "",
+      targetType: ""
+    };
+
+    // Add the Description__c mapping if it doesn't already exist
+    const descriptionExists = mappings.some(mapping =>
       mapping.source === "Description__c" && mapping.target === "Deal_Description__c"
     );
 
-    if (!exists) {
+    if (!descriptionExists) {
       mappings.push(descriptionMapping);
+    }
+
+    // Add the Last_Viewed_Date mapping if it doesn't already exist
+    const lastViewedExists = mappings.some(mapping =>
+      mapping.source === "Last_Viewed_Date"
+    );
+
+    if (!lastViewedExists) {
+      mappings.push(lastViewedDateMapping);
     }
 
     return mappings;
@@ -207,6 +224,12 @@ interface CharacterLimitMismatch {
   severity: 'warning' | 'error';
 }
 
+// Interface for missing field validation
+interface MissingFieldMismatch {
+  sourceField: string;
+  severity: 'warning' | 'error';
+}
+
 // Function to validate picklist values between source and target
 const validatePicklistValues = (
   sourcePicklistValues: PicklistValue[],
@@ -264,6 +287,22 @@ const validateCharacterLimits = (
       sourceLength,
       targetLength,
       severity: sourceLength > targetLength * 1.5 ? 'error' : 'warning'
+    };
+  }
+
+  return null;
+};
+
+// Function to validate missing fields (fields that exist in source but not in target)
+const validateMissingFields = (
+  sourceField: string,
+  targetField: string
+): MissingFieldMismatch | null => {
+  // If sourceField exists but targetField is empty, it's a missing field
+  if (sourceField && sourceField.trim() !== '' && (!targetField || targetField.trim() === '')) {
+    return {
+      sourceField,
+      severity: 'warning'
     };
   }
 
@@ -436,6 +475,9 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [characterLimitMismatches, setCharacterLimitMismatches] = useState<CharacterLimitMismatch[]>([]);
   const [resolvedCharacterLimitIssues, setResolvedCharacterLimitIssues] = useState<Set<string>>(new Set());
 
+  // Missing field validation state
+  const [missingFieldMismatches, setMissingFieldMismatches] = useState<MissingFieldMismatch[]>([]);
+
   // API call and loader effect with progress animation - 3 seconds total
   useEffect(() => {
     if (!showLoader) return;
@@ -594,6 +636,27 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
 
     validateCharacterLimitsMismatches();
   }, [mappingRows, sourceMetadata, targetMetadata, resolvedCharacterLimitIssues]);
+
+  // Missing field validation effect - runs after mappings are loaded
+  useEffect(() => {
+    const validateMissingFieldsMismatches = () => {
+      if (mappingRows.length === 0) return;
+
+      const mismatches: MissingFieldMismatch[] = [];
+
+      mappingRows.forEach(row => {
+        const mismatch = validateMissingFields(row.sourceField, row.targetField);
+
+        if (mismatch) {
+          mismatches.push(mismatch);
+        }
+      });
+
+      setMissingFieldMismatches(mismatches);
+    };
+
+    validateMissingFieldsMismatches();
+  }, [mappingRows]);
 
   // Comprehensive validations
   const validationResults = useMemo(() => {
@@ -929,6 +992,38 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
                 </div>
                 <div className="ds-fieldmapping-missing-values" style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>
                   Suggested Action: Increase Target field length to match Source or enable Truncate option in mapping settings.
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Missing Field Validation Warnings */}
+      {missingFieldMismatches.length > 0 && (
+        <div className="ds-fieldmapping-validation-warnings">
+          <div className="ds-fieldmapping-warning-header">
+            <WarningIcon className="ds-fieldmapping-warning-icon" />
+            <h4 className="ds-fieldmapping-warning-title">Missing Field in Target</h4>
+          </div>
+          {missingFieldMismatches.map((mismatch, index) => (
+            <div key={index} className={`ds-fieldmapping-warning-item ${index < missingFieldMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
+              <div className="ds-fieldmapping-warning-content">
+                <div className="ds-fieldmapping-warning-subheader">
+                  <div className="ds-fieldmapping-field-mapping">
+                    Field: {mismatch.sourceField}
+                  </div>
+                  <div className="ds-fieldmapping-warning-actions">
+                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
+                      {mismatch.severity}
+                    </span>
+                  </div>
+                </div>
+                <div className="ds-fieldmapping-missing-values">
+                  ⚠️ Field Missing in Target Org: The field "{mismatch.sourceField}" exists in Source but not in Target. Please create it before running simulation.
+                </div>
+                <div className="ds-fieldmapping-missing-values" style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>
+                  Suggested Action: Create the missing field in Target and re-validate metadata before simulation.
                 </div>
               </div>
             </div>
