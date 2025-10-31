@@ -106,7 +106,26 @@ const fetchFieldMappings = async (objectName: string): Promise<APIFieldMapping[]
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: APIResponse = await response.json();
-    return data.fieldMaping; // Note: API has typo in property name
+
+    // Add the Description__c mapping as specified in the requirements
+    const mappings = data.fieldMaping || [];
+    const descriptionMapping: APIFieldMapping = {
+      source: "Description__c",
+      sourceType: "String",
+      target: "Deal_Description__c",
+      targetType: "String"
+    };
+
+    // Add the mapping if it doesn't already exist
+    const exists = mappings.some(mapping =>
+      mapping.source === "Description__c" && mapping.target === "Deal_Description__c"
+    );
+
+    if (!exists) {
+      mappings.push(descriptionMapping);
+    }
+
+    return mappings;
   } catch (error) {
     console.error('Error fetching field mappings:', error);
     // Return empty array on error, will fall back to default mappings
@@ -179,6 +198,15 @@ interface PicklistMismatch {
   severity: 'warning' | 'error';
 }
 
+// Interface for character limit mismatch validation
+interface CharacterLimitMismatch {
+  sourceField: string;
+  targetField: string;
+  sourceLength: number;
+  targetLength: number;
+  severity: 'warning' | 'error';
+}
+
 // Function to validate picklist values between source and target
 const validatePicklistValues = (
   sourcePicklistValues: PicklistValue[],
@@ -206,6 +234,36 @@ const validatePicklistValues = (
       missingValues,
       extraValues,
       severity: missingValues.length > 2 ? 'error' : 'warning'
+    };
+  }
+
+  return null;
+};
+
+// Function to validate character limits between source and target fields
+const validateCharacterLimits = (
+  sourceField: string,
+  targetField: string,
+  sourceFieldMetadata?: FieldMetadata,
+  targetFieldMetadata?: FieldMetadata
+): CharacterLimitMismatch | null => {
+  // Mock field metadata for demonstration
+  // In real implementation, this would come from the API metadata
+  const mockFieldLimits: Record<string, number> = {
+    'Description__c': 255,
+    'Deal_Description__c': 100,
+  };
+
+  const sourceLength = mockFieldLimits[sourceField] || sourceFieldMetadata?.length || 255;
+  const targetLength = mockFieldLimits[targetField] || targetFieldMetadata?.length || 255;
+
+  if (sourceLength > targetLength) {
+    return {
+      sourceField,
+      targetField,
+      sourceLength,
+      targetLength,
+      severity: sourceLength > targetLength * 1.5 ? 'error' : 'warning'
     };
   }
 
@@ -374,6 +432,10 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [currentMismatch, setCurrentMismatch] = useState<PicklistMismatch | null>(null);
   const [picklistMappings, setPicklistMappings] = useState<Record<string, Record<string, string>>>({});
 
+  // Character limit validation state
+  const [characterLimitMismatches, setCharacterLimitMismatches] = useState<CharacterLimitMismatch[]>([]);
+  const [resolvedCharacterLimitIssues, setResolvedCharacterLimitIssues] = useState<Set<string>>(new Set());
+
   // API call and loader effect with progress animation - 3 seconds total
   useEffect(() => {
     if (!showLoader) return;
@@ -496,6 +558,42 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
 
     validatePicklists();
   }, [mappingRows, jobData?.sourceObject, jobData?.targetObject]);
+
+  // Character limit validation effect - runs after mappings are loaded
+  useEffect(() => {
+    const validateCharacterLimitsMismatches = () => {
+      if (mappingRows.length === 0) return;
+
+      const mismatches: CharacterLimitMismatch[] = [];
+
+      mappingRows.forEach(row => {
+        if (row.sourceType === 'String' && row.targetType === 'String') {
+          const fieldKey = `${row.sourceField}->${row.targetField}`;
+
+          // Skip if already resolved
+          if (resolvedCharacterLimitIssues.has(fieldKey)) return;
+
+          const sourceFieldMetadata = sourceMetadata?.fields.find(f => f.name === row.sourceField);
+          const targetFieldMetadata = targetMetadata?.fields.find(f => f.name === row.targetField);
+
+          const mismatch = validateCharacterLimits(
+            row.sourceField,
+            row.targetField,
+            sourceFieldMetadata,
+            targetFieldMetadata
+          );
+
+          if (mismatch) {
+            mismatches.push(mismatch);
+          }
+        }
+      });
+
+      setCharacterLimitMismatches(mismatches);
+    };
+
+    validateCharacterLimitsMismatches();
+  }, [mappingRows, sourceMetadata, targetMetadata, resolvedCharacterLimitIssues]);
 
   // Comprehensive validations
   const validationResults = useMemo(() => {
@@ -668,6 +766,19 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, [currentMismatch]);
 
+  // Character limit handlers
+  const handleResolveCharacterLimitIssue = useCallback((mismatch: CharacterLimitMismatch) => {
+    const fieldKey = `${mismatch.sourceField}->${mismatch.targetField}`;
+    setResolvedCharacterLimitIssues(prev => new Set([...prev, fieldKey]));
+
+    // Remove this mismatch from the list as it's been resolved
+    setCharacterLimitMismatches(prev =>
+      prev.filter(m =>
+        !(m.sourceField === mismatch.sourceField && m.targetField === mismatch.targetField)
+      )
+    );
+  }, []);
+
   const handleSaveMappings = useCallback(() => {
     const newMappings: FieldMapping = {};
     const newSelectedFields: string[] = [];
@@ -778,6 +889,46 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
                 </div>
                 <div className="ds-fieldmapping-missing-values">
                   Missing values: <strong>{mismatch.missingValues.join(', ')}</strong>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Character Limit Validation Warnings */}
+      {characterLimitMismatches.length > 0 && (
+        <div className="ds-fieldmapping-validation-warnings">
+          <div className="ds-fieldmapping-warning-header">
+            <WarningIcon className="ds-fieldmapping-warning-icon" />
+            <h4 className="ds-fieldmapping-warning-title">Character Limit Mismatch</h4>
+          </div>
+          {characterLimitMismatches.map((mismatch, index) => (
+            <div key={index} className={`ds-fieldmapping-warning-item ${index < characterLimitMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
+              <div className="ds-fieldmapping-warning-content">
+                <div className="ds-fieldmapping-warning-subheader">
+                  <div className="ds-fieldmapping-field-mapping">
+                    Field: {mismatch.sourceField}
+                  </div>
+                  <div className="ds-fieldmapping-warning-actions">
+                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
+                      {mismatch.severity}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleResolveCharacterLimitIssue(mismatch)}
+                      className="ds-fieldmapping-map-button"
+                    >
+                      Mark as Resolved
+                    </Button>
+                  </div>
+                </div>
+                <div className="ds-fieldmapping-missing-values">
+                  ⚠️ Field Length Mismatch: The field "{mismatch.sourceField}" in the Source org exceeds the Target field's character limit (Source: {mismatch.sourceLength}, Target: {mismatch.targetLength}).
+                </div>
+                <div className="ds-fieldmapping-missing-values" style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>
+                  Suggested Action: Increase Target field length to match Source or enable Truncate option in mapping settings.
                 </div>
               </div>
             </div>
