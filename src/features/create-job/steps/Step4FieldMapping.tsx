@@ -937,6 +937,16 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
 
     // Convert picklist mismatches
     picklistMismatches.forEach((mismatch, index) => {
+      const missingValuesText = mismatch.missingValues.length > 0
+        ? `(${mismatch.missingValues.join(', ')})`
+        : '';
+
+      const description = `⚠️ Picklist Mismatch Detected: The source field "${mismatch.sourceField}" contains values ${missingValuesText} that are not available in the target org. Please review the mapping below or update the target picklist to include these values before simulation.`;
+
+      const suggestion = mismatch.missingValues.length > 0
+        ? `Map the missing source values ${missingValuesText} to existing target values, or add these values to the target picklist in your Salesforce org.`
+        : 'Review and map the picklist values between source and target fields.';
+
       issues.push({
         id: `picklist-${index}`,
         type: 'picklist',
@@ -944,9 +954,10 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
         fieldName: mismatch.sourceField,
         sourcePath: mismatch.sourceField,
         targetPath: mismatch.targetField,
-        description: `Missing values: ${mismatch.missingValues.join(', ')}`,
+        description: description,
         details: {
-          missingValues: mismatch.missingValues
+          missingValues: mismatch.missingValues,
+          suggestion: suggestion
         },
         onMapValues: () => handleOpenPicklistMapping(mismatch)
       });

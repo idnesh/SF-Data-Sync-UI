@@ -4910,7 +4910,7 @@
   background: rgba(220, 53, 69, 0.1);
   border: 1px solid rgba(220, 53, 69, 0.3);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.5rem;
   color: #dc3545;
   margin: 0.5rem 0;
 }
