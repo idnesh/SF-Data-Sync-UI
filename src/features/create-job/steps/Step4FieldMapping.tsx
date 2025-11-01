@@ -2,11 +2,11 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Button } from '../../../components/common/Button';
 import { Modal } from '../../../components/common/Modal';
+import { CompactFieldMappingIssues, Issue } from '../../../components/common/CompactFieldMappingIssues';
 import { FieldMapping, FieldMappingMetadata } from '../types';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
-import WarningIcon from '@mui/icons-material/Warning';
 
 // API Response interfaces
 interface APIFieldMapping {
@@ -842,6 +842,61 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, []);
 
+  // Convert mismatches to Issues format for CompactFieldMappingIssues
+  const convertToIssues = useCallback((): Issue[] => {
+    const issues: Issue[] = [];
+
+    // Convert picklist mismatches
+    picklistMismatches.forEach((mismatch, index) => {
+      issues.push({
+        id: `picklist-${index}`,
+        type: 'picklist',
+        severity: mismatch.severity,
+        fieldName: mismatch.sourceField,
+        sourcePath: mismatch.sourceField,
+        targetPath: mismatch.targetField,
+        description: `Missing values: ${mismatch.missingValues.join(', ')}`,
+        details: {
+          missingValues: mismatch.missingValues
+        },
+        onMapValues: () => handleOpenPicklistMapping(mismatch)
+      });
+    });
+
+    // Convert character limit mismatches
+    characterLimitMismatches.forEach((mismatch, index) => {
+      issues.push({
+        id: `character-${index}`,
+        type: 'character',
+        severity: mismatch.severity,
+        fieldName: mismatch.sourceField,
+        description: `⚠️ Field Length Mismatch: The field "${mismatch.sourceField}" in the Source org exceeds the Target field's character limit (Source: ${mismatch.sourceLength}, Target: ${mismatch.targetLength}).`,
+        details: {
+          sourceLimit: mismatch.sourceLength,
+          targetLimit: mismatch.targetLength,
+          suggestion: 'Increase Target field length to match Source or enable Truncate option in mapping settings.'
+        },
+        onResolve: () => handleResolveCharacterLimitIssue(mismatch)
+      });
+    });
+
+    // Convert missing field mismatches
+    missingFieldMismatches.forEach((mismatch, index) => {
+      issues.push({
+        id: `missing-${index}`,
+        type: 'missing',
+        severity: mismatch.severity,
+        fieldName: mismatch.sourceField,
+        description: `⚠️ Field Missing in Target Org: The field "${mismatch.sourceField}" exists in Source but not in Target. Please create it before running simulation.`,
+        details: {
+          suggestion: 'Create the missing field in Target and re-validate metadata before simulation.'
+        }
+      });
+    });
+
+    return issues;
+  }, [picklistMismatches, characterLimitMismatches, missingFieldMismatches, handleOpenPicklistMapping, handleResolveCharacterLimitIssue]);
+
   const handleSaveMappings = useCallback(() => {
     const newMappings: FieldMapping = {};
     const newSelectedFields: string[] = [];
@@ -922,114 +977,8 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
         </p>
       </div>
 
-      {/* Picklist Validation Warnings */}
-      {picklistMismatches.length > 0 && (
-        <div className="ds-fieldmapping-validation-warnings">
-          <div className="ds-fieldmapping-warning-header">
-            <WarningIcon className="ds-fieldmapping-warning-icon" />
-            <h4 className="ds-fieldmapping-warning-title">Picklist Issues</h4>
-          </div>
-          {picklistMismatches.map((mismatch, index) => (
-            <div key={index} className={`ds-fieldmapping-warning-item ${index < picklistMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
-              <div className="ds-fieldmapping-warning-content">
-                <div className="ds-fieldmapping-warning-subheader">
-                  <div className="ds-fieldmapping-field-mapping">
-                    {mismatch.sourceField} → {mismatch.targetField}
-                  </div>
-                  <div className="ds-fieldmapping-warning-actions">
-                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
-                      {mismatch.severity}
-                    </span>
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      onClick={() => handleOpenPicklistMapping(mismatch)}
-                      className="ds-fieldmapping-map-button"
-                    >
-                      Map Values
-                    </Button>
-                  </div>
-                </div>
-                <div className="ds-fieldmapping-missing-values">
-                  Missing values: <strong>{mismatch.missingValues.join(', ')}</strong>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Character Limit Validation Warnings */}
-      {characterLimitMismatches.length > 0 && (
-        <div className="ds-fieldmapping-validation-warnings">
-          <div className="ds-fieldmapping-warning-header">
-            <WarningIcon className="ds-fieldmapping-warning-icon" />
-            <h4 className="ds-fieldmapping-warning-title">Character Limit Mismatch</h4>
-          </div>
-          {characterLimitMismatches.map((mismatch, index) => (
-            <div key={index} className={`ds-fieldmapping-warning-item ${index < characterLimitMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
-              <div className="ds-fieldmapping-warning-content">
-                <div className="ds-fieldmapping-warning-subheader">
-                  <div className="ds-fieldmapping-field-mapping">
-                    Field: {mismatch.sourceField}
-                  </div>
-                  <div className="ds-fieldmapping-warning-actions">
-                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
-                      {mismatch.severity}
-                    </span>
-                    <Button
-                      variant="secondary"
-                      size="small"
-                      onClick={() => handleResolveCharacterLimitIssue(mismatch)}
-                      className="ds-fieldmapping-map-button"
-                    >
-                      Mark as Resolved
-                    </Button>
-                  </div>
-                </div>
-                <div className="ds-fieldmapping-missing-values">
-                  ⚠️ Field Length Mismatch: The field "{mismatch.sourceField}" in the Source org exceeds the Target field's character limit (Source: {mismatch.sourceLength}, Target: {mismatch.targetLength}).
-                </div>
-                <div className="ds-fieldmapping-missing-values" style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>
-                  Suggested Action: Increase Target field length to match Source or enable Truncate option in mapping settings.
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Missing Field Validation Warnings */}
-      {missingFieldMismatches.length > 0 && (
-        <div className="ds-fieldmapping-validation-warnings">
-          <div className="ds-fieldmapping-warning-header">
-            <WarningIcon className="ds-fieldmapping-warning-icon" />
-            <h4 className="ds-fieldmapping-warning-title">Missing Field in Target</h4>
-          </div>
-          {missingFieldMismatches.map((mismatch, index) => (
-            <div key={index} className={`ds-fieldmapping-warning-item ${index < missingFieldMismatches.length - 1 ? 'ds-fieldmapping-warning-item-with-margin' : ''}`}>
-              <div className="ds-fieldmapping-warning-content">
-                <div className="ds-fieldmapping-warning-subheader">
-                  <div className="ds-fieldmapping-field-mapping">
-                    Field: {mismatch.sourceField}
-                  </div>
-                  <div className="ds-fieldmapping-warning-actions">
-                    <span className={`ds-fieldmapping-severity-badge ds-fieldmapping-severity-${mismatch.severity}`}>
-                      {mismatch.severity}
-                    </span>
-                  </div>
-                </div>
-                <div className="ds-fieldmapping-missing-values">
-                  ⚠️ Field Missing in Target Org: The field "{mismatch.sourceField}" exists in Source but not in Target. Please create it before running simulation.
-                </div>
-                <div className="ds-fieldmapping-missing-values" style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>
-                  Suggested Action: Create the missing field in Target and re-validate metadata before simulation.
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Field Mapping Issues using CompactFieldMappingIssues component */}
+      <CompactFieldMappingIssues issues={convertToIssues()} />
 
       <div className="field-mapping-table">
         <div className="table-header-fixed">
