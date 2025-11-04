@@ -4950,6 +4950,194 @@
   }
 }
 
+/* DS Field Mapping Dialog Styles */
+.ds-field-mapping-dialog-container {
+  padding: 0;
+  margin: 0;
+}
+
+.ds-field-mapping-dialog-no-issues {
+  padding: 1rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.ds-field-mapping-dialog-warning-header {
+  padding: 0.75rem;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.ds-field-mapping-dialog-warning-text {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.85rem;
+  color: #92400e;
+}
+
+.ds-field-mapping-dialog-section {
+  margin-bottom: 1rem;
+}
+
+.ds-field-mapping-dialog-grid-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: #f9fafb;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.ds-field-mapping-dialog-grid-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+
+.ds-field-mapping-dialog-source-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-field-mapping-dialog-source-value-badge {
+  padding: 0.3rem 0.5rem;
+  border-radius: 3px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.ds-field-mapping-dialog-arrow {
+  color: #6b7280;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.ds-field-mapping-dialog-select {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.ds-field-mapping-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* DS Field Mapping Error Dialog Styles */
+.ds-field-mapping-error-container {
+  padding: 0;
+  margin: 0;
+}
+
+.ds-field-mapping-error-item {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.ds-field-mapping-error-item-error {
+  border: 1px solid #ef4444;
+  background-color: #fef2f2;
+}
+
+.ds-field-mapping-error-item-warning {
+  border: 1px solid #f59e0b;
+  background-color: #fef3c7;
+}
+
+.ds-field-mapping-error-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.ds-field-mapping-error-header-error {
+  color: #dc2626;
+}
+
+.ds-field-mapping-error-header-warning {
+  color: #d97706;
+}
+
+.ds-field-mapping-error-description {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.ds-field-mapping-error-details-section {
+  margin-bottom: 1rem;
+}
+
+.ds-field-mapping-error-details-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.ds-field-mapping-error-details-content {
+  padding: 0.5rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.ds-field-mapping-error-details-content-mono {
+  font-family: monospace;
+}
+
+.ds-field-mapping-error-suggestion {
+  padding: 0.75rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.ds-field-mapping-error-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ds-field-mapping-error-dialog-close {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+/* DS Field Mapping Column Header Styles */
+.ds-field-mapping-object-label {
+  color: #3B82F6;
+  font-weight: 800;
+  padding: 2px 6px;
+}
+
+.ds-field-mapping-info-icon {
+  color: #dc2626; /* Default to error color, overridden by inline style for warnings */
+}
+
 .fields-table-fixed {
   table-layout: fixed;
   width: 100%;
@@ -8554,6 +8742,94 @@
   .ds-schedule-frequency-select {
     border-width: 2px;
   }
+}
+
+/* DS Test Schedule Additional Styles */
+.ds-test-schedule-controls-margin {
+  margin-top: 1rem;
+}
+
+.ds-test-schedule-synced-records {
+  margin-top: 1rem;
+}
+
+.ds-test-schedule-synced-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.ds-test-schedule-record-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ds-test-schedule-record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+
+.ds-test-schedule-record-id {
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.ds-test-schedule-record-status {
+  color: #28a745;
+  font-size: 12px;
+}
+
+.ds-test-schedule-result-margin {
+  margin-top: 1rem;
+}
+
+.ds-test-schedule-summary-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+.ds-test-schedule-summary-content {
+  flex: 1;
+}
+
+.ds-test-schedule-summary-icon {
+  font-size: 48px;
+  margin-left: 24px;
+  opacity: 0.9;
+}
+
+.ds-test-schedule-summary-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: white;
+}
+
+.ds-test-schedule-summary-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ds-test-schedule-circular-progress {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  position: relative;
 }
 
 /* ViewJobsPage - Professional & Modern Design */

@@ -8,6 +8,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import ListIcon from '@mui/icons-material/List';
+import InfoIcon from '@mui/icons-material/Info';
 
 // API Response interfaces
 interface APIFieldMapping {
@@ -364,33 +365,33 @@ const PicklistMappingDialog: React.FC<PicklistMappingDialogProps> = ({
       title="Picklist Value Mapping"
       size="large"
     >
-      <div style={{ padding: '0', margin: '0' }}>
-        <div style={{ padding: '0.75rem', background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '4px', marginBottom: '1rem' }}>
-          <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.85rem', color: '#92400e' }}>
+      <div className="ds-field-mapping-dialog-container">
+        <div className="ds-field-mapping-dialog-warning-header">
+          <p className="ds-field-mapping-dialog-warning-text">
             <strong>"{mismatch.sourceField}"</strong> → <strong>"{mismatch.targetField}"</strong>
           </p>
         </div>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0.75rem', marginBottom: '0.5rem', padding: '0.4rem 0.5rem', background: '#f9fafb', borderRadius: '3px', fontSize: '0.8rem', fontWeight: '600', color: '#6b7280' }}>
+        <div className="ds-field-mapping-dialog-section">
+          <div className="ds-field-mapping-dialog-grid-header">
             <span>Source Value</span>
             <span>→</span>
             <span>Target Value</span>
           </div>
 
           {mismatch.missingValues.map(sourceValue => (
-            <div key={sourceValue} style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0.75rem', alignItems: 'center', padding: '0.5rem', background: '#fff', borderRadius: '4px', marginBottom: '0.4rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ padding: '0.3rem 0.5rem', borderRadius: '3px', fontWeight: '500', fontSize: '0.8rem', background: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' }}>
+            <div key={sourceValue} className="ds-field-mapping-dialog-grid-row">
+              <div className="ds-field-mapping-dialog-source-value">
+                <span className="ds-field-mapping-dialog-source-value-badge">
                   {sourceValue}
                 </span>
               </div>
-              <div style={{ color: '#6b7280', fontWeight: '600', textAlign: 'center', fontSize: '0.8rem' }}>→</div>
+              <div className="ds-field-mapping-dialog-arrow">→</div>
               <div>
                 <select
                   value={mappings[sourceValue] || ''}
                   onChange={(e) => handleMappingChange(sourceValue, e.target.value)}
-                  style={{ width: '100%', padding: '0.4rem', border: '1px solid #d1d5db', borderRadius: '3px', fontSize: '0.8rem' }}
+                  className="ds-field-mapping-dialog-select"
                 >
                   <option value="">Select target value...</option>
                   {targetPicklistValues.map(targetValue => (
@@ -404,7 +405,7 @@ const PicklistMappingDialog: React.FC<PicklistMappingDialogProps> = ({
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+        <div className="ds-field-mapping-dialog-actions">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
@@ -483,6 +484,113 @@ const calculateConfidenceScore = (
   return Math.max(0, confidence);
 };
 
+// ErrorDetailsDialog Component
+interface ErrorDetailsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  row: MappingRow | null;
+  errors: Array<{type: string, severity: 'error' | 'warning', title: string, description: string, details?: any}>;
+  onMapValues?: () => void;
+  onResolveCharacterLimit?: () => void;
+}
+
+const ErrorDetailsDialog: React.FC<ErrorDetailsDialogProps> = ({
+  isOpen,
+  onClose,
+  row,
+  errors,
+  onMapValues,
+  onResolveCharacterLimit
+}) => {
+  if (!row) return null;
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Field Details: ${row.sourceField}`}
+      size="large"
+    >
+      <div className="ds-field-mapping-error-container">
+        {errors.length === 0 ? (
+          <div className="ds-field-mapping-dialog-no-issues">
+            No issues found for this field.
+          </div>
+        ) : (
+          errors.map((error, index) => (
+            <div key={index} className={`ds-field-mapping-error-item ${error.severity === 'error' ? 'ds-field-mapping-error-item-error' : 'ds-field-mapping-error-item-warning'}`}>
+              <div className={`ds-field-mapping-error-header ${error.severity === 'error' ? 'ds-field-mapping-error-header-error' : 'ds-field-mapping-error-header-warning'}`}>
+                <span>{error.severity === 'error' ? '❌' : '⚠️'}</span>
+                <span>{error.title}</span>
+              </div>
+
+              <div className="ds-field-mapping-error-description">
+                {error.description}
+              </div>
+
+              {/* Character limit specific details */}
+              {error.type === 'character' && error.details && (
+                <div className="ds-field-mapping-error-details-section">
+                  <div className="ds-field-mapping-error-details-title">
+                    Limits:
+                  </div>
+                  <div className="ds-field-mapping-error-details-content ds-field-mapping-error-details-content-mono">
+                    Source: {error.details.sourceLimit}, Target: {error.details.targetLimit}
+                  </div>
+                </div>
+              )}
+
+              {/* Picklist specific details */}
+              {error.type === 'picklist' && error.details && error.details.missingValues && (
+                <div className="ds-field-mapping-error-details-section">
+                  <div className="ds-field-mapping-error-details-title">
+                    Missing Values:
+                  </div>
+                  <div className="ds-field-mapping-error-details-content">
+                    {error.details.missingValues.join(', ')}
+                  </div>
+                </div>
+              )}
+
+              {/* Suggestion */}
+              {error.details?.suggestion && (
+                <div className="ds-field-mapping-error-details-section">
+                  <div className="ds-field-mapping-error-details-title">
+                    Suggestion:
+                  </div>
+                  <div className="ds-field-mapping-error-suggestion">
+                    {error.details.suggestion}
+                  </div>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="ds-field-mapping-error-actions">
+                {error.type === 'picklist' && onMapValues && (
+                  <Button variant="primary" onClick={onMapValues} size="small">
+                    Map Values
+                  </Button>
+                )}
+                {error.type === 'character' && onResolveCharacterLimit && (
+                  <Button variant="outline" onClick={onResolveCharacterLimit} size="small">
+                    Mark as Resolved
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+
+        <div className="ds-field-mapping-error-dialog-close">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
 // Transform API response to MappingRow format
 const transformAPIResponseToMappingRows = (apiMappings: APIFieldMapping[]): MappingRow[] => {
   return apiMappings.map(mapping => {
@@ -537,6 +645,10 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [picklistMappings, setPicklistMappings] = useState<Record<string, Record<string, string>>>({});
   const [metadataFetchAttempted, setMetadataFetchAttempted] = useState<Set<string>>(new Set());
   const [metadataFetchError, setMetadataFetchError] = useState<boolean>(false);
+
+  // Error details dialog state
+  const [showErrorDetailsDialog, setShowErrorDetailsDialog] = useState(false);
+  const [selectedRowForErrors, setSelectedRowForErrors] = useState<MappingRow | null>(null);
 
   // Character limit validation state
   const [characterLimitMismatches, setCharacterLimitMismatches] = useState<CharacterLimitMismatch[]>([]);
@@ -992,6 +1104,95 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, []);
 
+  // Error details dialog handlers
+  const handleOpenErrorDetails = useCallback((row: MappingRow) => {
+    setSelectedRowForErrors(row);
+    setShowErrorDetailsDialog(true);
+  }, []);
+
+  const handleCloseErrorDetails = useCallback(() => {
+    setShowErrorDetailsDialog(false);
+    setSelectedRowForErrors(null);
+  }, []);
+
+  // Function to get all errors and warnings for a specific row
+  const getRowErrorDetails = useCallback((row: MappingRow) => {
+    const errors: Array<{type: string, severity: 'error' | 'warning', title: string, description: string, details?: any}> = [];
+
+    const sourceField = row.sourceField;
+    const targetField = row.targetField;
+
+    // Check for missing field issues
+    const missingFieldIssue = missingFieldMismatches.find(m => m.sourceField === sourceField);
+    if (missingFieldIssue) {
+      errors.push({
+        type: 'missing',
+        severity: missingFieldIssue.severity,
+        title: 'Missing Target Field',
+        description: `⚠️ Field Missing in Target Org: The field "${sourceField}" exists in Source but not in Target. Please create it before running simulation.`,
+        details: {
+          suggestion: 'Create the missing field in Target and re-validate metadata before simulation.'
+        }
+      });
+    }
+
+    // Check for picklist issues
+    const picklistIssue = picklistMismatches.find(m =>
+      m.sourceField === sourceField && m.targetField === targetField
+    );
+    if (picklistIssue) {
+      const missingValuesText = picklistIssue.missingValues.length > 0
+        ? `(${picklistIssue.missingValues.join(', ')})`
+        : '';
+
+      errors.push({
+        type: 'picklist',
+        severity: picklistIssue.severity,
+        title: 'Picklist Value Mismatch',
+        description: `⚠️ Picklist Mismatch Detected: The source field "${sourceField}" contains values ${missingValuesText} that are not available in the target org.`,
+        details: {
+          missingValues: picklistIssue.missingValues,
+          extraValues: picklistIssue.extraValues,
+          suggestion: `Map the missing source values ${missingValuesText} to existing target values, or add these values to the target picklist in your Salesforce org.`
+        }
+      });
+    }
+
+    // Check for character limit issues
+    const characterLimitIssue = characterLimitMismatches.find(m =>
+      m.sourceField === sourceField && m.targetField === targetField
+    );
+    if (characterLimitIssue) {
+      errors.push({
+        type: 'character',
+        severity: characterLimitIssue.severity,
+        title: 'Field Length Mismatch',
+        description: `⚠️ Field Length Mismatch: The field "${sourceField}" in the Source org exceeds the Target field's character limit.`,
+        details: {
+          sourceLimit: characterLimitIssue.sourceLength,
+          targetLimit: characterLimitIssue.targetLength,
+          suggestion: 'Increase Target field length to match Source or enable Truncate option in mapping settings.'
+        }
+      });
+    }
+
+    // Check for duplicate target fields
+    const isDuplicate = validationResults.duplicateTargetFields.has(targetField) && targetField !== '';
+    if (isDuplicate) {
+      errors.push({
+        type: 'duplicate',
+        severity: 'error' as const,
+        title: 'Duplicate Target Mapping',
+        description: `⚠️ Duplicate Mapping: Multiple source fields are mapped to the same target field "${targetField}".`,
+        details: {
+          suggestion: 'Change the target field to a unique value or remove one of the duplicate mappings.'
+        }
+      });
+    }
+
+    return errors;
+  }, [missingFieldMismatches, picklistMismatches, characterLimitMismatches, validationResults]);
+
   // Helper function to determine issue severity for a row
   const getRowIssueClass = useCallback((row: MappingRow): string => {
     const sourceField = row.sourceField;
@@ -1161,7 +1362,7 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
             <div className="progress-bar">
               <div
                 className="progress-fill"
-                style={{ width: `${progress}%` }}
+style={{ width: `${progress}%` }}
               />
             </div>
             <div className="progress-text">{Math.round(progress)}% Complete</div>
@@ -1188,7 +1389,7 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
       </div>
 
       {/* Field Mapping Issues using CompactFieldMappingIssues component */}
-      <CompactFieldMappingIssues issues={convertToIssues()} />
+      {/* <CompactFieldMappingIssues issues={convertToIssues()} /> */}
 
       <div className="field-mapping-table">
         <div className="table-header-fixed">
@@ -1207,8 +1408,8 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
           </div>
           <div className="column-header">Primary Key</div>
           <div className="column-header">Mask PII</div>
-          <div className="column-header">Source Field (<span style={{ color: '#3B82F6', fontWeight: '800', padding: '2px 6px'}}>{jobData?.sourceObject || 'Contact'}</span>)</div>
-          <div className="column-header">Target Field (<span style={{ color: '#3B82F6', fontWeight: '800', padding: '2px 6px'}}>{jobData?.targetObject || 'Contact__c'}</span>)</div>
+          <div className="column-header">Source Field (<span className="ds-field-mapping-object-label">{jobData?.sourceObject || 'Contact'}</span>)</div>
+          <div className="column-header">Target Field (<span className="ds-field-mapping-object-label">{jobData?.targetObject || 'Contact__c'}</span>)</div>
           <div className="column-header">AI Confidence</div>
         </div>
         <div className="table-body-scrollable">
@@ -1333,6 +1534,21 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
                       {isDuplicate && <span className="duplicate-indicator"> (Duplicate)</span>}
                     </div>
                     <div className="inline-actions">
+                      {/* Info icon for rows with errors/warnings */}
+                      {(getRowErrorDetails(row).length > 0) && (
+                        <span
+                          className="action-icon info-icon"
+                          onClick={() => handleOpenErrorDetails(row)}
+                          aria-label="View error details"
+                          role="button"
+                          tabIndex={0}
+                          title="View error details and suggestions"
+style={{ color: getRowErrorDetails(row).some(e => e.severity === 'error') ? '#dc2626' : '#d97706' }}
+                        >
+                          <InfoIcon fontSize="small" />
+                        </span>
+                      )}
+
                       {row.sourceType === 'Picklist' && row.targetType === 'Picklist' && (
                         <span
                           className="action-icon map-values-icon"
@@ -1442,6 +1658,36 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
             targetMetadata.fields.find(f => f.name === currentMismatch.targetField)?.picklistValues || []
           }
           onSaveMapping={handleSavePicklistMapping}
+        />
+      )}
+
+      {/* Error Details Dialog */}
+      {showErrorDetailsDialog && selectedRowForErrors && (
+        <ErrorDetailsDialog
+          isOpen={showErrorDetailsDialog}
+          onClose={handleCloseErrorDetails}
+          row={selectedRowForErrors}
+          errors={getRowErrorDetails(selectedRowForErrors)}
+          onMapValues={() => {
+            // Find picklist mismatch for this row and open picklist mapping dialog
+            const mismatch = picklistMismatches.find(m =>
+              m.sourceField === selectedRowForErrors.sourceField && m.targetField === selectedRowForErrors.targetField
+            );
+            if (mismatch) {
+              handleCloseErrorDetails();
+              handleOpenPicklistMapping(mismatch);
+            }
+          }}
+          onResolveCharacterLimit={() => {
+            // Find character limit mismatch for this row and resolve it
+            const mismatch = characterLimitMismatches.find(m =>
+              m.sourceField === selectedRowForErrors.sourceField && m.targetField === selectedRowForErrors.targetField
+            );
+            if (mismatch) {
+              handleResolveCharacterLimitIssue(mismatch);
+              handleCloseErrorDetails();
+            }
+          }}
         />
       )}
     </div>

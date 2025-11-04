@@ -658,7 +658,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
             </div>
 
             {/* Test Controls - Compact */}
-            <div className="ds-schedule-test-controls" style={{ marginTop: '1rem' }}>
+            <div className="ds-schedule-test-controls ds-test-schedule-controls-margin">
               <div className="ds-schedule-sample-control">
               </div>
               <Button
@@ -685,21 +685,13 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                 </div>
                 {/* Display synced record IDs */}
                 {simulationResult.syncedRecords && simulationResult.syncedRecords.length > 0 && (
-                  <div className="ds-schedule-synced-records" style={{ marginTop: '1rem' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '0.5rem' }}>Synced Record IDs:</h4>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  <div className="ds-schedule-synced-records ds-test-schedule-synced-records">
+                    <h4 className="ds-test-schedule-synced-title">Synced Record IDs:</h4>
+                    <ul className="ds-test-schedule-record-list">
                       {simulationResult.syncedRecords.map((record) => (
-                        <li key={record.id} style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: '0.5rem',
-                          backgroundColor: '#f8f9fa',
-                          borderRadius: '4px',
-                          marginBottom: '0.25rem'
-                        }}>
-                          <span style={{ fontFamily: 'monospace', fontWeight: '500' }}>{record.id}</span>
-                          <span style={{ color: '#28a745', fontSize: '12px' }}>✅ {record.status}</span>
+                        <li key={record.id} className="ds-test-schedule-record-item">
+                          <span className="ds-test-schedule-record-id">{record.id}</span>
+                          <span className="ds-test-schedule-record-status">✅ {record.status}</span>
                         </li>
                       ))}
                     </ul>
@@ -821,7 +813,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
             {/* Test Results - Compact */}
             {testCompleted && jobData.testResult && (
-              <div className="ds-schedule-test-results" style={{marginTop: '1rem'}}>
+              <div className="ds-schedule-test-results ds-test-schedule-result-margin">
                 <div className="ds-schedule-result-header">
                   <span className="ds-schedule-result-icon">
                     {jobData.testResult.success ? '✅' : '⚠️'}
@@ -1106,56 +1098,37 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         }}>
 
           {/* Countdown with Circular Progress */}
-          <div style={{
-            backgroundColor: 'var(--bg-secondary)',
-            padding: '1.5rem 1rem',
-            borderRadius: '12px',
-            marginBottom: '1.5rem',
-            textAlign: 'center'
-          }}>
-            <p
-              style={{
-                fontSize: '1rem',
-                color: 'var(--text-secondary)',
-                margin: '0 0 1.5rem 0',
-                fontWeight: '500'
-              }}
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              🟢 Job created successfully. Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}
-            </p>
+          <div className="ds-test-schedule-summary-container">
+            <div className="ds-test-schedule-summary-content">
+              <p
+                className="ds-test-schedule-summary-title"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                🟢 Job created successfully. Redirecting in {countdown} second{countdown !== 1 ? 's' : ''}
+              </p>
 
-            {/* Circular Progress Timer */}
-            <div style={{
-              width: '100px',
-              height: '100px',
-              margin: '0 auto',
-              position: 'relative'
-            }}>
-              <CircularProgressbar
-                value={((5 - countdown) / 5) * 100}
-                text={`⏳${countdown}`}
-                styles={buildStyles({
-                  textSize: '24px',
-                  pathColor: '#10B981',
-                  textColor: '#10B981',
-                  trailColor: 'var(--border-primary)',
-                  backgroundColor: 'transparent',
-                  pathTransitionDuration: 1,
-                  strokeLinecap: 'round'
-                })}
-              />
+              {/* Circular Progress Timer */}
+              <div className="ds-test-schedule-circular-progress">
+                <CircularProgressbar
+                  value={((5 - countdown) / 5) * 100}
+                  text={`⏳${countdown}`}
+                  styles={buildStyles({
+                    textSize: '24px',
+                    pathColor: '#10B981',
+                    textColor: '#10B981',
+                    trailColor: 'var(--border-primary)',
+                    backgroundColor: 'transparent',
+                    pathTransitionDuration: 1,
+                    strokeLinecap: 'round'
+                  })}
+                />
+              </div>
+
+              <p className="ds-test-schedule-summary-subtitle">
+                You can also click the button below to go immediately
+              </p>
             </div>
-
-            <p style={{
-              fontSize: '0.8rem',
-              color: 'var(--text-secondary)',
-              margin: '1rem 0 0 0',
-              opacity: 0.7
-            }}>
-              You can also click the button below to go immediately
-            </p>
           </div>
 
           <Button
