@@ -5073,6 +5073,17 @@
   background-color: #fef3c7;
 }
 
+/* Dark Mode Support for Error Items */
+[data-theme="dark"] .ds-field-mapping-error-item-error {
+  border: 1px solid #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+[data-theme="dark"] .ds-field-mapping-error-item-warning {
+  border: 1px solid #d97706;
+  background-color: rgba(217, 119, 6, 0.1);
+}
+
 .ds-field-mapping-error-header {
   display: flex;
   align-items: center;
@@ -5087,6 +5098,15 @@
 
 .ds-field-mapping-error-header-warning {
   color: #d97706;
+}
+
+/* Dark Mode Support for Error Headers */
+[data-theme="dark"] .ds-field-mapping-error-header-error {
+  color: #ef4444;
+}
+
+[data-theme="dark"] .ds-field-mapping-error-header-warning {
+  color: #f59e0b;
 }
 
 .ds-field-mapping-error-description {
@@ -5122,6 +5142,19 @@
   border-radius: 4px;
   font-size: 0.9rem;
   line-height: 1.4;
+}
+
+/* Dark Mode Support for Error Details Content */
+[data-theme="dark"] .ds-field-mapping-error-details-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .ds-field-mapping-error-suggestion {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
 }
 
 .ds-field-mapping-error-actions {

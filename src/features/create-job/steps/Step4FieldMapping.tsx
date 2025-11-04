@@ -855,25 +855,21 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     validateMissingFieldsMismatches();
   }, [mappingRows]);
 
-  // Update confidence scores when validation issues change
-  useEffect(() => {
-    if (mappingRows.length === 0) return;
-
-    setMappingRows(prev =>
-      prev.map(row => ({
-        ...row,
-        confidenceScore: calculateConfidenceScore(
-          row.sourceField,
-          row.targetField,
-          row.sourceType,
-          row.targetType,
-          picklistMismatches,
-          characterLimitMismatches,
-          missingFieldMismatches
-        )
-      }))
-    );
-  }, [picklistMismatches, characterLimitMismatches, missingFieldMismatches]);
+  // Calculate mapping rows with updated confidence scores
+  const mappingRowsWithConfidence = useMemo(() => {
+    return mappingRows.map(row => ({
+      ...row,
+      confidenceScore: calculateConfidenceScore(
+        row.sourceField,
+        row.targetField,
+        row.sourceType,
+        row.targetType,
+        picklistMismatches,
+        characterLimitMismatches,
+        missingFieldMismatches
+      )
+    }));
+  }, [mappingRows, picklistMismatches, characterLimitMismatches, missingFieldMismatches]);
 
   // Comprehensive validations
   const validationResults = useMemo(() => {
@@ -1313,7 +1309,7 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     const newSelectedFields: string[] = [];
     const metadata: FieldMappingMetadata = {};
 
-    mappingRows.forEach(row => {
+    mappingRowsWithConfidence.forEach(row => {
       if (row.targetField && row.targetField !== '') {
         newMappings[row.sourceField] = row.targetField;
         newSelectedFields.push(row.sourceField);
@@ -1334,7 +1330,7 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     const transformations = {};
 
     onUpdateMappings(newMappings, transformations, newSelectedFields, syncAllFields, metadata);
-  }, [mappingRows, syncAllFields, onUpdateMappings]);
+  }, [mappingRowsWithConfidence, syncAllFields, onUpdateMappings]);
 
   const handleNext = useCallback(() => {
     if (validationResults.isValid) {
@@ -1415,7 +1411,7 @@ style={{ width: `${progress}%` }}
         </div>
         <div className="table-body-scrollable">
 
-        {mappingRows.map((row) => {
+        {mappingRowsWithConfidence.map((row) => {
           const isDuplicate = validationResults.duplicateTargetFields.has(row.targetField) && row.targetField !== '';
           const isInvalidSource = validationResults.invalidSourceFields.some(f => f.sourceField === row.sourceField);
           const isEmptySource = !row.sourceField || row.sourceField.trim() === '';
