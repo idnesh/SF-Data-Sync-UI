@@ -1411,6 +1411,7 @@ style={{ width: `${progress}%` }}
           <div className="column-header">Source Field (<span className="ds-field-mapping-object-label">{jobData?.sourceObject || 'Contact'}</span>)</div>
           <div className="column-header">Target Field (<span className="ds-field-mapping-object-label">{jobData?.targetObject || 'Contact__c'}</span>)</div>
           <div className="column-header">AI Confidence</div>
+          <div className="column-header">Actions</div>
         </div>
         <div className="table-body-scrollable">
 
@@ -1533,52 +1534,6 @@ style={{ width: `${progress}%` }}
                       {row.targetField && <span className="field-type">({row.targetType})</span>}
                       {isDuplicate && <span className="duplicate-indicator"> (Duplicate)</span>}
                     </div>
-                    <div className="inline-actions">
-                      {/* Info icon for rows with errors/warnings */}
-                      {(getRowErrorDetails(row).length > 0) && (
-                        <span
-                          className="action-icon info-icon"
-                          onClick={() => handleOpenErrorDetails(row)}
-                          aria-label="View error details"
-                          role="button"
-                          tabIndex={0}
-                          title="View error details and suggestions"
-style={{ color: getRowErrorDetails(row).some(e => e.severity === 'error') ? '#dc2626' : '#d97706' }}
-                        >
-                          <InfoIcon fontSize="small" />
-                        </span>
-                      )}
-
-                      {row.sourceType === 'Picklist' && row.targetType === 'Picklist' && (
-                        <span
-                          className="action-icon map-values-icon"
-                          onClick={() => {
-                            const mismatch = picklistMismatches.find(m =>
-                              m.sourceField === row.sourceField && m.targetField === row.targetField
-                            );
-                            if (mismatch) {
-                              handleOpenPicklistMapping(mismatch);
-                            }
-                          }}
-                          aria-label="Map picklist values"
-                          role="button"
-                          tabIndex={0}
-                          title="Map picklist values"
-                        >
-                          <ListIcon fontSize="small" />
-                        </span>
-                      )}
-
-                      <span
-                        className="action-icon edit-icon"
-                        onClick={() => handleEditStart(row.sourceField, row.targetField)}
-                        aria-label="Edit mapping"
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <EditIcon fontSize="small" />
-                      </span>
-                    </div>
                   </div>
                 )}
               </div>
@@ -1586,6 +1541,55 @@ style={{ color: getRowErrorDetails(row).some(e => e.severity === 'error') ? '#dc
               <div className="confidence-score">
                 <div className={`confidence-badge confidence-${getConfidenceLevel(row.confidenceScore)}`}>
                   <span className="confidence-value">{row.confidenceScore}%</span>
+                </div>
+              </div>
+
+              <div className="actions-column">
+                <div className="inline-actions">
+                  {/* Info icon for rows with errors/warnings */}
+                  {(getRowErrorDetails(row).length > 0) && (
+                    <span
+                      className="action-icon info-icon"
+                      onClick={() => handleOpenErrorDetails(row)}
+                      aria-label="View error details"
+                      role="button"
+                      tabIndex={0}
+                      title="View error details and suggestions"
+                      style={{ color: getRowErrorDetails(row).some(e => e.severity === 'error') ? '#dc2626' : '#d97706' }}
+                    >
+                      <InfoIcon fontSize="small" />
+                    </span>
+                  )}
+
+                  {row.sourceType === 'Picklist' && row.targetType === 'Picklist' && (
+                    <span
+                      className="action-icon map-values-icon"
+                      onClick={() => {
+                        const mismatch = picklistMismatches.find(m =>
+                          m.sourceField === row.sourceField && m.targetField === row.targetField
+                        );
+                        if (mismatch) {
+                          handleOpenPicklistMapping(mismatch);
+                        }
+                      }}
+                      aria-label="Map picklist values"
+                      role="button"
+                      tabIndex={0}
+                      title="Map picklist values"
+                    >
+                      <ListIcon fontSize="small" />
+                    </span>
+                  )}
+
+                  <span
+                    className="action-icon edit-icon"
+                    onClick={() => handleEditStart(row.sourceField, row.targetField)}
+                    aria-label="Edit mapping"
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <EditIcon fontSize="small" />
+                  </span>
                 </div>
               </div>
             </div>

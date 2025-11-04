@@ -4506,7 +4506,7 @@
 
 .field-mapping-table .table-header-fixed {
   display: grid;
-  grid-template-columns: 167px 125px 85px 1fr 1fr 130px;
+  grid-template-columns: 167px 125px 85px 1fr 1fr 130px 120px;
   border-bottom: 2px solid var(--border-primary);
   position: sticky;
   top: 0;
@@ -4516,7 +4516,7 @@
 }
 
 .field-mapping-table .table-body-scrollable {
-  max-height: calc(100vh - 430px);
+  max-height: calc(100vh - 470px);
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -4548,8 +4548,8 @@
 
 /* Field Mapping Table Column Width Configuration
    Widths are controlled by grid-template-columns in .table-header-fixed and .mapping-row
-   167px | 125px | 85px | 280px | 280px | 130px
-   Include in Sync | Primary Key | Mask PII | Source Field | Target Field | AI Confidence */
+   167px | 125px | 85px | 280px | 280px | 130px | 120px
+   Include in Sync | Primary Key | Mask PII | Source Field | Target Field | AI Confidence | Actions */
 
 /* Field Type Display Styling */
 .field-mapping-table .field-type {
@@ -4568,6 +4568,15 @@
   display: flex;
 }
 
+/* Actions Column Styling */
+.actions-column {
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border-primary);
+}
+
 /* Add subtle shine effect */
 .field-mapping-table .column-header:before {
   content: '';
@@ -4581,7 +4590,7 @@
 
 .mapping-row {
   display: grid;
-  grid-template-columns: 167px 125px 85px 1fr 1fr 130px;
+  grid-template-columns: 167px 125px 85px 1fr 1fr 130px 120px;
   border-bottom: 1px solid var(--border-primary);
   transition: background-color 0.2s ease;
 }
