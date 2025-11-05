@@ -8,7 +8,8 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import ListIcon from '@mui/icons-material/List';
-import InfoIcon from '@mui/icons-material/Info';
+import WarningIcon from '@mui/icons-material/Warning';
+import ErrorIcon from '@mui/icons-material/Error';
 
 // API Response interfaces
 interface APIFieldMapping {
@@ -16,6 +17,15 @@ interface APIFieldMapping {
   sourceType: string;
   target: string;
   targetType: string;
+  defaultValue?: string;
+  isError?: boolean;
+  isWarning?: boolean;
+  errorMessage?: string;
+  suggestedFix?: string;
+  valueMap?: Array<{
+    source: string;
+    target: string;
+  }>;
 }
 
 interface APIResponse {
@@ -48,6 +58,15 @@ interface MappingRow {
   includeInSync: boolean; // Indicates if this field should be included in sync
   isPII: boolean; // Indicates if this field contains Personally Identifiable Information
   maskPII: boolean; // Indicates if PII data should be masked during sync
+  defaultValue?: string;
+  isError?: boolean;
+  isWarning?: boolean;
+  errorMessage?: string;
+  suggestedFix?: string;
+  valueMap?: Array<{
+    source: string;
+    target: string;
+  }>;
 }
 
 // Note: Target field options are now derived from API mappings
@@ -452,102 +471,92 @@ const calculateConfidenceScore = (
   return Math.max(0, confidence);
 };
 
-// ErrorDetailsDialog Component
-interface ErrorDetailsDialogProps {
+
+// API Field Issue Dialog Component
+interface APIFieldIssueDialogProps {
   isOpen: boolean;
   onClose: () => void;
   row: MappingRow | null;
-  errors: Array<{type: string, severity: 'error' | 'warning', title: string, description: string, details?: any}>;
-  onMapValues?: () => void;
-  onResolveCharacterLimit?: () => void;
 }
 
-const ErrorDetailsDialog: React.FC<ErrorDetailsDialogProps> = ({
+const APIFieldIssueDialog: React.FC<APIFieldIssueDialogProps> = ({
   isOpen,
   onClose,
-  row,
-  errors,
-  onMapValues,
-  onResolveCharacterLimit
+  row
 }) => {
   if (!row) return null;
+
+  const hasIssue = row.isError || row.isWarning;
+  if (!hasIssue) return null;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Field Details: ${row.sourceField}`}
+      title={`Field Issue: ${row.sourceField}`}
       size="large"
     >
       <div className="ds-field-mapping-error-container">
-        {errors.length === 0 ? (
-          <div className="ds-field-mapping-dialog-no-issues">
-            No issues found for this field.
+        <div className={`ds-field-mapping-error-item ${row.isError ? 'ds-field-mapping-error-item-error' : 'ds-field-mapping-error-item-warning'}`}>
+          <div className={`ds-field-mapping-error-header ${row.isError ? 'ds-field-mapping-error-header-error' : 'ds-field-mapping-error-header-warning'}`}>
+            <span>{row.isError ? '❌' : '⚠️'}</span>
+            <span>{row.isError ? 'Error' : 'Warning'}</span>
           </div>
-        ) : (
-          errors.map((error, index) => (
-            <div key={index} className={`ds-field-mapping-error-item ${error.severity === 'error' ? 'ds-field-mapping-error-item-error' : 'ds-field-mapping-error-item-warning'}`}>
-              <div className={`ds-field-mapping-error-header ${error.severity === 'error' ? 'ds-field-mapping-error-header-error' : 'ds-field-mapping-error-header-warning'}`}>
-                <span>{error.severity === 'error' ? '❌' : '⚠️'}</span>
-                <span>{error.title}</span>
+
+          {row.errorMessage && (
+            <div className="ds-field-mapping-error-description">
+              {row.errorMessage}
+            </div>
+          )}
+
+          {row.suggestedFix && (
+            <div className="ds-field-mapping-error-details-section">
+              <div className="ds-field-mapping-error-details-title">
+                Suggested Fix:
               </div>
-
-              <div className="ds-field-mapping-error-description">
-                {error.description}
-              </div>
-
-              {/* Character limit specific details */}
-              {error.type === 'character' && error.details && (
-                <div className="ds-field-mapping-error-details-section">
-                  <div className="ds-field-mapping-error-details-title">
-                    Limits:
-                  </div>
-                  <div className="ds-field-mapping-error-details-content ds-field-mapping-error-details-content-mono">
-                    Source: {error.details.sourceLimit}, Target: {error.details.targetLimit}
-                  </div>
-                </div>
-              )}
-
-              {/* Picklist specific details */}
-              {error.type === 'picklist' && error.details && error.details.missingValues && (
-                <div className="ds-field-mapping-error-details-section">
-                  <div className="ds-field-mapping-error-details-title">
-                    Missing Values:
-                  </div>
-                  <div className="ds-field-mapping-error-details-content">
-                    {error.details.missingValues.join(', ')}
-                  </div>
-                </div>
-              )}
-
-              {/* Suggestion */}
-              {error.details?.suggestion && (
-                <div className="ds-field-mapping-error-details-section">
-                  <div className="ds-field-mapping-error-details-title">
-                    Suggestion:
-                  </div>
-                  <div className="ds-field-mapping-error-suggestion">
-                    {error.details.suggestion}
-                  </div>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              <div className="ds-field-mapping-error-actions">
-                {error.type === 'picklist' && onMapValues && (
-                  <Button variant="primary" onClick={onMapValues} size="small">
-                    Map Values
-                  </Button>
-                )}
-                {error.type === 'character' && onResolveCharacterLimit && (
-                  <Button variant="outline" onClick={onResolveCharacterLimit} size="small">
-                    Mark as Resolved
-                  </Button>
-                )}
+              <div className="ds-field-mapping-error-suggestion">
+                {row.suggestedFix}
               </div>
             </div>
-          ))
-        )}
+          )}
+
+          {row.defaultValue && (
+            <div className="ds-field-mapping-error-details-section">
+              <div className="ds-field-mapping-error-details-title">
+                Default Value:
+              </div>
+              <div className="ds-field-mapping-error-details-content">
+                {row.defaultValue}
+              </div>
+            </div>
+          )}
+
+          {row.valueMap && row.valueMap.length > 0 && (
+            <div className="ds-field-mapping-error-details-section">
+              <div className="ds-field-mapping-error-details-title">
+                Value Mapping:
+              </div>
+              <div className="ds-field-mapping-error-details-content">
+                <table style={{ width: '100%', marginTop: '8px' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ddd' }}>Source</th>
+                      <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ddd' }}>Target</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {row.valueMap.map((mapping, index) => (
+                      <tr key={index}>
+                        <td style={{ padding: '4px 8px', borderBottom: '1px solid #eee' }}>{mapping.source}</td>
+                        <td style={{ padding: '4px 8px', borderBottom: '1px solid #eee' }}>{mapping.target}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="ds-field-mapping-error-dialog-close">
           <Button variant="outline" onClick={onClose}>
@@ -579,7 +588,13 @@ const transformAPIResponseToMappingRows = (apiMappings: APIFieldMapping[]): Mapp
       isPrimaryKey: isPrimaryKeyField(mapping.source),
       includeInSync: shouldIncludeInSync(mapping.source),
       isPII: isPII,
-      maskPII: isPII // Default to mask if PII
+      maskPII: isPII, // Default to mask if PII
+      defaultValue: mapping.defaultValue,
+      isError: mapping.isError,
+      isWarning: mapping.isWarning,
+      errorMessage: mapping.errorMessage,
+      suggestedFix: mapping.suggestedFix,
+      valueMap: mapping.valueMap
     };
   });
 };
@@ -614,9 +629,10 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
   const [metadataFetchAttempted, setMetadataFetchAttempted] = useState<Set<string>>(new Set());
   const [metadataFetchError, setMetadataFetchError] = useState<boolean>(false);
 
-  // Error details dialog state
-  const [showErrorDetailsDialog, setShowErrorDetailsDialog] = useState(false);
-  const [selectedRowForErrors, setSelectedRowForErrors] = useState<MappingRow | null>(null);
+
+  // API field issue dialog state
+  const [showAPIFieldIssueDialog, setShowAPIFieldIssueDialog] = useState(false);
+  const [selectedRowForAPIIssue, setSelectedRowForAPIIssue] = useState<MappingRow | null>(null);
 
   // Character limit validation state
   const [characterLimitMismatches, setCharacterLimitMismatches] = useState<CharacterLimitMismatch[]>([]);
@@ -1068,143 +1084,32 @@ export const Step4FieldMapping: React.FC<Step4FieldMappingProps> = ({
     );
   }, []);
 
-  // Error details dialog handlers
-  const handleOpenErrorDetails = useCallback((row: MappingRow) => {
-    setSelectedRowForErrors(row);
-    setShowErrorDetailsDialog(true);
+
+  // API field issue dialog handlers
+  const handleOpenAPIFieldIssue = useCallback((row: MappingRow) => {
+    setSelectedRowForAPIIssue(row);
+    setShowAPIFieldIssueDialog(true);
   }, []);
 
-  const handleCloseErrorDetails = useCallback(() => {
-    setShowErrorDetailsDialog(false);
-    setSelectedRowForErrors(null);
+  const handleCloseAPIFieldIssue = useCallback(() => {
+    setShowAPIFieldIssueDialog(false);
+    setSelectedRowForAPIIssue(null);
   }, []);
 
-  // Function to get all errors and warnings for a specific row
-  const getRowErrorDetails = useCallback((row: MappingRow) => {
-    const errors: Array<{type: string, severity: 'error' | 'warning', title: string, description: string, details?: any}> = [];
 
-    const sourceField = row.sourceField;
-    const targetField = row.targetField;
-
-    // Check for missing field issues
-    const missingFieldIssue = missingFieldMismatches.find(m => m.sourceField === sourceField);
-    if (missingFieldIssue) {
-      errors.push({
-        type: 'missing',
-        severity: missingFieldIssue.severity,
-        title: 'Missing Target Field',
-        description: `⚠️ Field Missing in Target Org: The field "${sourceField}" exists in Source but not in Target. Please create it before running simulation.`,
-        details: {
-          suggestion: 'Create the missing field in Target and re-validate metadata before simulation.'
-        }
-      });
-    }
-
-    // Check for picklist issues
-    const picklistIssue = picklistMismatches.find(m =>
-      m.sourceField === sourceField && m.targetField === targetField
-    );
-    if (picklistIssue) {
-      const missingValuesText = picklistIssue.missingValues.length > 0
-        ? `(${picklistIssue.missingValues.join(', ')})`
-        : '';
-
-      errors.push({
-        type: 'picklist',
-        severity: picklistIssue.severity,
-        title: 'Picklist Value Mismatch',
-        description: `⚠️ Picklist Mismatch Detected: The source field "${sourceField}" contains values ${missingValuesText} that are not available in the target org.`,
-        details: {
-          missingValues: picklistIssue.missingValues,
-          extraValues: picklistIssue.extraValues,
-          suggestion: `Map the missing source values ${missingValuesText} to existing target values, or add these values to the target picklist in your Salesforce org.`
-        }
-      });
-    }
-
-    // Check for character limit issues
-    const characterLimitIssue = characterLimitMismatches.find(m =>
-      m.sourceField === sourceField && m.targetField === targetField
-    );
-    if (characterLimitIssue) {
-      errors.push({
-        type: 'character',
-        severity: characterLimitIssue.severity,
-        title: 'Field Length Mismatch',
-        description: `⚠️ Field Length Mismatch: The field "${sourceField}" in the Source org exceeds the Target field's character limit.`,
-        details: {
-          sourceLimit: characterLimitIssue.sourceLength,
-          targetLimit: characterLimitIssue.targetLength,
-          suggestion: 'Increase Target field length to match Source or enable Truncate option in mapping settings.'
-        }
-      });
-    }
-
-    // Check for duplicate target fields
-    const isDuplicate = validationResults.duplicateTargetFields.has(targetField) && targetField !== '';
-    if (isDuplicate) {
-      errors.push({
-        type: 'duplicate',
-        severity: 'error' as const,
-        title: 'Duplicate Target Mapping',
-        description: `⚠️ Duplicate Mapping: Multiple source fields are mapped to the same target field "${targetField}".`,
-        details: {
-          suggestion: 'Change the target field to a unique value or remove one of the duplicate mappings.'
-        }
-      });
-    }
-
-    return errors;
-  }, [missingFieldMismatches, picklistMismatches, characterLimitMismatches, validationResults]);
-
-  // Helper function to determine issue severity for a row
+  // Helper function to determine issue severity for a row based on API response
   const getRowIssueClass = useCallback((row: MappingRow): string => {
-    const sourceField = row.sourceField;
-    const targetField = row.targetField;
-
-    // Check for critical validation errors
-    const isDuplicate = validationResults.duplicateTargetFields.has(targetField) && targetField !== '';
-    const isInvalidSource = validationResults.invalidSourceFields.some((f: any) => f.sourceField === sourceField);
-    const isEmptySource = !sourceField || sourceField.trim() === '';
-
-    // Check for picklist errors
-    const hasPicklistError = picklistMismatches.some(m =>
-      m.sourceField === sourceField && m.targetField === targetField && m.severity === 'error'
-    );
-
-    // Check for character limit errors
-    const hasCharacterLimitError = characterLimitMismatches.some(m =>
-      m.sourceField === sourceField && m.targetField === targetField && m.severity === 'error'
-    );
-
-    // Check for missing field errors (like Last_Viewed_Date)
-    const hasMissingFieldError = missingFieldMismatches.some(m =>
-      m.sourceField === sourceField && m.severity === 'error'
-    );
-
-    if (isDuplicate || isInvalidSource || isEmptySource || hasPicklistError || hasCharacterLimitError || hasMissingFieldError) {
+    // Check API response flags first
+    if (row.isError) {
       return 'has-error';
     }
 
-    // Check for warnings
-    const hasPicklistWarning = picklistMismatches.some(m =>
-      m.sourceField === sourceField && m.targetField === targetField && m.severity === 'warning'
-    );
-
-    const hasCharacterLimitWarning = characterLimitMismatches.some(m =>
-      m.sourceField === sourceField && m.targetField === targetField && m.severity === 'warning'
-    );
-
-    const hasMissingFieldWarning = missingFieldMismatches.some(m =>
-      m.sourceField === sourceField && m.severity === 'warning'
-    );
-
-    if (hasPicklistWarning || hasCharacterLimitWarning || hasMissingFieldWarning) {
+    if (row.isWarning) {
       return 'has-warning';
     }
 
     return '';
-  }, [validationResults, picklistMismatches, characterLimitMismatches, missingFieldMismatches]);
+  }, []);
 
   // Convert mismatches to Issues format for CompactFieldMappingIssues
   const convertToIssues = useCallback((): Issue[] => {
@@ -1510,20 +1415,36 @@ style={{ width: `${progress}%` }}
 
               <div className="actions-column">
                 <div className="inline-actions">
-                  {/* Info icon for rows with errors/warnings */}
-                  {(getRowErrorDetails(row).length > 0) && (
+                  {/* API Error icon */}
+                  {row.isError && (
                     <span
-                      className="action-icon info-icon"
-                      onClick={() => handleOpenErrorDetails(row)}
+                      className="action-icon error-icon"
+                      onClick={() => handleOpenAPIFieldIssue(row)}
                       aria-label="View error details"
                       role="button"
                       tabIndex={0}
-                      title="View error details and suggestions"
-                      style={{ color: getRowErrorDetails(row).some(e => e.severity === 'error') ? '#dc2626' : '#d97706' }}
+                      title={`Error: ${row.errorMessage || 'Field mapping error'}`}
+                      style={{ color: '#dc2626' }}
                     >
-                      <InfoIcon fontSize="small" />
+                      <ErrorIcon fontSize="small" />
                     </span>
                   )}
+
+                  {/* API Warning icon */}
+                  {row.isWarning && !row.isError && (
+                    <span
+                      className="action-icon warning-icon"
+                      onClick={() => handleOpenAPIFieldIssue(row)}
+                      aria-label="View warning details"
+                      role="button"
+                      tabIndex={0}
+                      title={`Warning: ${row.errorMessage || 'Field mapping warning'}`}
+                      style={{ color: '#d97706' }}
+                    >
+                      <WarningIcon fontSize="small" />
+                    </span>
+                  )}
+
 
                   {row.sourceType === 'Picklist' && row.targetType === 'Picklist' && (
                     <span
@@ -1629,33 +1550,13 @@ style={{ width: `${progress}%` }}
         />
       )}
 
-      {/* Error Details Dialog */}
-      {showErrorDetailsDialog && selectedRowForErrors && (
-        <ErrorDetailsDialog
-          isOpen={showErrorDetailsDialog}
-          onClose={handleCloseErrorDetails}
-          row={selectedRowForErrors}
-          errors={getRowErrorDetails(selectedRowForErrors)}
-          onMapValues={() => {
-            // Find picklist mismatch for this row and open picklist mapping dialog
-            const mismatch = picklistMismatches.find(m =>
-              m.sourceField === selectedRowForErrors.sourceField && m.targetField === selectedRowForErrors.targetField
-            );
-            if (mismatch) {
-              handleCloseErrorDetails();
-              handleOpenPicklistMapping(mismatch);
-            }
-          }}
-          onResolveCharacterLimit={() => {
-            // Find character limit mismatch for this row and resolve it
-            const mismatch = characterLimitMismatches.find(m =>
-              m.sourceField === selectedRowForErrors.sourceField && m.targetField === selectedRowForErrors.targetField
-            );
-            if (mismatch) {
-              handleResolveCharacterLimitIssue(mismatch);
-              handleCloseErrorDetails();
-            }
-          }}
+
+      {/* API Field Issue Dialog */}
+      {showAPIFieldIssueDialog && selectedRowForAPIIssue && (
+        <APIFieldIssueDialog
+          isOpen={showAPIFieldIssueDialog}
+          onClose={handleCloseAPIFieldIssue}
+          row={selectedRowForAPIIssue}
         />
       )}
     </div>
