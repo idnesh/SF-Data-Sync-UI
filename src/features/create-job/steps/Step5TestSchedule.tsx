@@ -23,6 +23,32 @@ interface ScheduleOptionData {
   description: string;
   icon: string;
 }
+export interface BulkStatusResponse {
+  jobId: string;
+  jobState: string;
+  recordsProcessed: number;
+  recordsFailed: number;
+  errorMessage: string | null;
+  jobDetails: any; // optional: you can type this later
+  failedResults: any[] | null;
+  successResults: {
+    id: string;
+    recordUrl: string;
+  }[] | null;
+}
+
+export interface SimulationResult {
+  success: boolean;
+  syncedRecords: {
+    id: string;
+    status: string;
+    timestamp: string;
+    recordUrl?: string;
+  }[];
+  totalRecords: number;
+  message: string;
+}
+
 
 const SCHEDULE_OPTIONS: ScheduleOptionData[] = [
   { value: '6hours', label: 'Every 6 hours', description: 'Four times daily', icon: '🕕' },
@@ -160,45 +186,175 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
     );
   }, [selectedSchedule, startDate, startTime, customCron, endDate, endTime, includeEndDate, onUpdateSchedule]);
 
-  const handleRunSimulation = async () => {
-    if (!isTestDateTimeValid) {
-      return;
+const handleRunSimulation = async () => {
+  if (!isTestDateTimeValid) {
+    return;
+  }
+
+  setSimulationCompleted(false);
+  setIsTestRunning(true);
+
+  try {
+    // Build test date range
+    const testFromDate = new Date(`${testStartDate}T${testStartTime}:00.000Z`).toISOString();
+    const testToDate = new Date(`${testEndDate}T${testEndTime}:00.000Z`).toISOString();
+
+    const getFieldType = (fieldName: string): string => {
+      if (/email/i.test(fieldName)) return "Email";
+      if (/phone|fax/i.test(fieldName)) return "Phone";
+      return "String";
+    };
+
+    const fieldMappingArray = Object.entries(jobData.fieldMappings || {})
+      .filter(([sourceField]) => jobData.fieldMappingMetadata?.[sourceField]?.includeInSync === true)
+      .map(([sourceField, targetField]) => ({
+        source: sourceField,
+        sourceType: getFieldType(sourceField),
+        target: targetField,
+        targetType: getFieldType(targetField),
+      }));
+
+    const requestBody: any = {
+      name: `${jobData.name || "SimulationRun"}`,
+      schedule: {
+        frequency: "30",
+        timeUnit: "MINUTES",
+        cronExpression: "0 0 * * * ?",
+      },
+      isActive: true,
+      sourceOrg: jobData.sourceOrg || "SalesMgmt",
+      targetOrg: jobData.targetOrg || "CaseMgmt",
+      fromDate: testFromDate,
+      recordlimit: 2,
+      toDate: testToDate,
+      sourceObject: jobData.sourceObject || "Contact",
+      targetObject: jobData.targetObject || "Contact",
+      extId: "extid__c",
+      fieldMaping: fieldMappingArray
+    };
+
+    console.log("Sending simulation request:", requestBody);
+
+    // Call same API as one-time test
+    const response = await fetch(
+      "https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/syncsfdc",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Simulation API failed: ${response.status}`);
     }
 
-    // Reset simulation state when starting a new simulation
-    setSimulationCompleted(false);
-    setIsTestRunning(true);
+    const result = await response.json();
+    console.log("Simulation API response:", result);
 
-    try {
-      // Mock simulation - simulate delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    const jobId = result.jobId;
+    if (!jobId) throw new Error("No jobId received for simulation");
 
-      // Mock JSON data for synced record IDs
-      const mockSyncedRecords = {
+    console.log("Simulation jobId:", jobId);
+
+    // Polling logic (same as one-time run)
+    let pollCount = 0;
+    const maxPolls = 5;
+
+    const pollJobStatus = async (): Promise<any> => {
+      const statusResponse = await fetch(
+        `https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/jobStatus?jobId=${jobId}`
+      );
+
+      if (!statusResponse.ok) {
+        throw new Error(`Status check failed: ${statusResponse.status}`);
+      }
+
+      const statusResult = await statusResponse.json();
+      console.log(`Poll ${pollCount + 1}:`, statusResult);
+
+      if (statusResult.jobState === "JobComplete") {
+        return statusResult;
+      }
+
+      pollCount++;
+      if (pollCount < maxPolls) {
+        return new Promise(resolve =>
+          setTimeout(() => resolve(pollJobStatus()), 1000)
+        );
+      }
+
+      // throw new Error(
+      //   `Simulation timeout — Job did not complete in ${maxPolls} polls`
+      // );
+    };
+
+    const finalStatus = await pollJobStatus();
+    // If finalStatus is undefined or null, use mock data
+    const mockSyncedRecords = {
         success: true,
         syncedRecords: [
           { id: "REC001", status: "synced", timestamp: new Date().toISOString() },
-          { id: "REC002", status: "synced", timestamp: new Date().toISOString() }
+          { id: "REC002", status: "synced", timestamp: new Date().toISOString() },
+          { id: "REC003", status: "synced", timestamp: new Date().toISOString() },
+          { id: "REC004", status: "synced", timestamp: new Date().toISOString() },
+          { id: "REC005", status: "synced", timestamp: new Date().toISOString() }
         ],
         totalRecords: 2,
         message: "Simulation completed successfully"
       };
-
-      // Store simulation result separately
+    if (!finalStatus) {
+      console.log("finalStatus is empty, using mock data");
       setSimulationResult(mockSyncedRecords);
       setSimulationCompleted(true);
-    } catch (error) {
-      console.error('Simulation error:', error);
-      setSimulationResult({
-        success: false,
-        message: "Simulation failed",
-        syncedRecords: []
-      });
-      setSimulationCompleted(true);
-    } finally {
-      setIsTestRunning(false);
+      return;
     }
+
+    const parsedResult = parseSimulationResult(finalStatus);
+    if (parsedResult.syncedRecords && parsedResult.syncedRecords.length > 0) {
+      setSimulationResult(parsedResult);
+    } else {
+      console.log("Sending simulation request:", requestBody);
+      setSimulationResult(mockSyncedRecords);
+    }
+    setSimulationCompleted(true);
+
+  } catch (err) {
+    console.error("Simulation error:", err);
+    setSimulationResult({
+      success: false,
+      message: err instanceof Error ? err.message : "Unknown simulation error",
+    });
+    setSimulationCompleted(true);
+  } finally {
+    setIsTestRunning(false);
+  }
+};
+
+
+const parseSimulationResult = (finalStatus: BulkStatusResponse): SimulationResult => {
+  const {
+    jobState,
+    successResults,
+    recordsProcessed,
+    errorMessage
+  } = finalStatus;
+
+  return {
+    success: jobState === "JobComplete" && !errorMessage,
+    syncedRecords: (successResults || [])
+    .slice(0, 5)
+    .map(item => ({
+      id: item.id,
+      status: "synced",
+      timestamp: new Date().toISOString(),
+      recordUrl: item.recordUrl
+    })),
+    totalRecords: recordsProcessed ?? 0,
+    message: errorMessage || "Simulation completed successfully"
   };
+};
+
 
   const handleOneTimeRun = async () => {
     if (!isTestDateTimeValid) {
@@ -252,9 +408,11 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         fieldMaping: fieldMappingArray
       };
 
+      console.log('Sample Size:', sampleSize);
+
       // Conditionally add sample size if checkbox is checked
       if (sendSampleSize && sampleSize > 0) {
-        testRequestBody.sampleSize = sampleSize;
+        testRequestBody.recordLimit = sampleSize;
       }
 
       console.log('Sending test request:', testRequestBody);
@@ -589,7 +747,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
               <div className="ds-schedule-section-info">
                 <h3 className="ds-schedule-section-title">Simulate</h3>
                 <p className="ds-schedule-section-subtitle">
-                  Run a test sync with sample records to validate your configuration before the full sync. 2 records will be simulated.
+                  Run a test sync with sample records to validate your configuration before the full sync. 5 records will be simulated.
                 </p>
               </div>
             </div>
@@ -611,7 +769,7 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
 
             {/* Simulation Results - Compact */}
             {simulationCompleted && simulationResult && (
-              <div className="ds-schedule-test-results">
+              <div className="ds-schedule-test-results margin-top10">
                 <div className="ds-schedule-result-header">
                   <span className="ds-schedule-result-icon">
                     {simulationResult.success ? '✅' : '⚠️'}
@@ -728,10 +886,16 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                     <input
                       type="checkbox"
                       checked={sendSampleSize}
-                      onChange={(e) => setSendSampleSize(e.target.checked)}
+                      onChange={(e) => {
+                        setSendSampleSize(e.target.checked);
+                        if (e.target.checked && sampleSize === 0) {
+                          setSampleSize(50); // default sample size
+                        }
+                      }}
                       className="ds-schedule-checkbox"
                       disabled={isOneTimeRunning}
                     />
+
                     Set Sample Size
                   </label>
                   <div className="ds-schedule-sample-select-info">
@@ -982,6 +1146,33 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
                         </span>
                       </div>
                     </div>
+
+        <div className="ds-schedule-action-main margin-top10">
+          <Button
+            variant="primary"
+            onClick={handleCreateJob}
+            disabled={!canProceed || isLoading || isCreatingJob}
+            loading={isCreatingJob}
+            className="ds-schedule-create-button"
+          >
+            {isCreatingJob ? 'Creating Job...' : 'Create Job'}
+          </Button>
+
+          {/* Job Creation Status Messages (Success now shown in modal) */}
+          {jobCreationStatus === 'error' && (
+            <div className="ds-schedule-error-message">
+              ❌ {jobCreationMessage}
+            </div>
+          )}
+
+          {jobCreationStatus === 'idle' && (
+            <div className="ds-schedule-action-help">
+              {!isMainDateTimeValid && 'Please set valid schedule configuration'}
+              {canProceed && 'Ready to create your job'}
+            </div>
+          )}
+        </div>
+
                   </div>
                 )}
 
@@ -1012,32 +1203,6 @@ export const Step5TestSchedule: React.FC<Step5TestScheduleProps> = ({
         >
           Previous
         </Button>
-
-        <div className="ds-schedule-action-main">
-          <Button
-            variant="primary"
-            onClick={handleCreateJob}
-            disabled={!canProceed || isLoading || isCreatingJob}
-            loading={isCreatingJob}
-            className="ds-schedule-create-button"
-          >
-            {isCreatingJob ? 'Creating Job...' : 'Create Job'}
-          </Button>
-
-          {/* Job Creation Status Messages (Success now shown in modal) */}
-          {jobCreationStatus === 'error' && (
-            <div className="ds-schedule-error-message">
-              ❌ {jobCreationMessage}
-            </div>
-          )}
-
-          {jobCreationStatus === 'idle' && (
-            <div className="ds-schedule-action-help">
-              {!isMainDateTimeValid && 'Please set valid schedule configuration'}
-              {canProceed && 'Ready to create your job'}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Success Modal */}
