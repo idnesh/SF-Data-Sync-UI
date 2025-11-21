@@ -21,7 +21,8 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
   onPrevious,
   isLoading
 }) => {
-  const [objects, setObjects] = useState<SalesforceObject[]>([]);
+  const [sourceObjects, setSourceObjects] = useState<SalesforceObject[]>([]);
+  const [targetObjects, setTargetObjects] = useState<SalesforceObject[]>([]);
   const [loadingObjects, setLoadingObjects] = useState(true);
   const [sourceSearchTerm, setSourceSearchTerm] = useState('');
   const [targetSearchTerm, setTargetSearchTerm] = useState('');
@@ -39,31 +40,51 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
       setError(null);
 
       try {
-        // Make API call to get SFDC objects
-        const response = await fetch('https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/getSfdcObjects', {
+        // Fetch source objects
+        const sourceResponse = await fetch('https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/getSfdcObjects?org=source', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
         });
 
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+        // Fetch target objects
+        const targetResponse = await fetch('https://syncsfdc-j39330.5sc6y6-3.usa-e2.cloudhub.io/getSfdcObjects?org=source', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!sourceResponse.ok) {
+          throw new Error(`Source API request failed with status ${sourceResponse.status}: ${sourceResponse.statusText}`);
         }
 
-        const data = await response.json();
+        if (!targetResponse.ok) {
+          throw new Error(`Target API request failed with status ${targetResponse.status}: ${targetResponse.statusText}`);
+        }
+
+        const sourceData = await sourceResponse.json();
+        const targetData = await targetResponse.json();
 
         // Transform the API response (array of strings) to match our SalesforceObject interface
-        const transformedObjects = data.map((objectString: string) => ({
+        const transformedSourceObjects = sourceData.map((objectString: string) => ({
           name: objectString,
           isCustom: objectString.endsWith('__c') // Custom objects end with __c
         }));
 
-        setObjects(transformedObjects);
+        const transformedTargetObjects = targetData.map((objectString: string) => ({
+          name: objectString,
+          isCustom: objectString.endsWith('__c') // Custom objects end with __c
+        }));
+
+        setSourceObjects(transformedSourceObjects);
+        setTargetObjects(transformedTargetObjects);
       } catch (err) {
         console.error('Error loading objects:', err);
         setError(`Failed to load Salesforce objects: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        setObjects([]);
+        setSourceObjects([]);
+        setTargetObjects([]);
       } finally {
         setLoadingObjects(false);
       }
@@ -122,26 +143,26 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
   // Filter source objects based on search term
   const filteredSourceObjects = useMemo(() => {
     if (!sourceSearchTerm.trim()) {
-      return objects;
+      return sourceObjects;
     }
 
     const term = sourceSearchTerm.toLowerCase();
-    return objects.filter(obj =>
+    return sourceObjects.filter((obj: SalesforceObject) =>
       obj.name.toLowerCase().includes(term)
     );
-  }, [objects, sourceSearchTerm]);
+  }, [sourceObjects, sourceSearchTerm]);
 
   // Filter target objects based on search term
   const filteredTargetObjects = useMemo(() => {
     if (!targetSearchTerm.trim()) {
-      return objects;
+      return targetObjects;
     }
 
     const term = targetSearchTerm.toLowerCase();
-    return objects.filter(obj =>
+    return targetObjects.filter((obj: SalesforceObject) =>
       obj.name.toLowerCase().includes(term)
     );
-  }, [objects, targetSearchTerm]);
+  }, [targetObjects, targetSearchTerm]);
 
   // Handle object expansion toggle
   const toggleObjectExpansion = useCallback((objectName: string, type: 'source' | 'target') => {
@@ -244,7 +265,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
               {filteredSourceObjects.length === 0 ? (
                 <div className="ds-empty-compact">No objects found</div>
               ) : (
-                filteredSourceObjects.map((object) => (
+                filteredSourceObjects.map((object: SalesforceObject) => (
                   <ExpandableObjectCard
                     key={`source-${object.name}`}
                     object={object}
@@ -288,7 +309,7 @@ export const Step3ObjectSelection: React.FC<Step3ObjectSelectionProps> = ({
               {filteredTargetObjects.length === 0 ? (
                 <div className="ds-empty-compact">No objects found</div>
               ) : (
-                filteredTargetObjects.map((object) => (
+                filteredTargetObjects.map((object: SalesforceObject) => (
                   <ExpandableObjectCard
                     key={`target-${object.name}`}
                     object={object}
